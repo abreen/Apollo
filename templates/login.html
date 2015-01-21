@@ -1,0 +1,39 @@
+<h1>Log in</h1>
+
+<p>
+Please enter your Kerberos user name and the access code you were e-mailed
+when you registered.
+</p>
+
+<p>
+If you don&rsquo;t have an access code, <a href="register.php">register for
+an access code now</a>.
+</p>
+
+$message
+
+<form method="post">
+
+<div class="row">
+    <div class="left">Kerberos user name</div>
+    <div class="right">
+        <input type="text" required="required" name="username">
+    </div>
+</div>
+
+<div class="row">
+    <div class="left">Access code</div>
+    <div class="right">
+        <input type="password" required="required" name="code">
+    </div>
+</div>
+
+<div class="row">
+    <div class="left"></div>
+    <div class="right">
+        <input type="submit">
+    </div>
+</div>
+
+<input type="hidden" name="submitted">
+</form>

@@ -1,0 +1,31 @@
+<a href="index.php">&larr; Back to submissions page</a>
+
+<h1>Upload files for $assignment</h1>
+
+<p>
+Use the upload fields below for each file required by this assignment.
+You can upload many files at a time. Any new uploads will
+<em>replace</em> the existing files. If a file has already been uploaded,
+not filling an upload field for that file will not change that file.
+However, if you upload a new version of a file, that file's timestamp
+will be updated &mdash; we will calculate the late penalty based on the most
+recent version uploaded.
+</p>
+
+<p>
+If a file&rsquo;s deadline has passed or submissions are not yet being
+accepted for that file, its upload field will be disabled.
+</p>
+
+<form enctype="multipart/form-data" method="post" class="upload">
+<input type="hidden" name="MAX_FILE_SIZE" value="30000">
+
+$rows
+
+<div class="row">
+    <div class="left"></div>
+    <div class="right"><input type="submit" value="Upload"></div>
+</div>
+
+<input type="hidden" name="submitted">
+</form>
