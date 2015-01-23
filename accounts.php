@@ -15,13 +15,6 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-define('ACCOUNTS_DIR', '');
-
-// how many characters in the access code
-define('CODE_LENGTH', 8);
-
-define('EMAIL_SUFFIX', '@example.edu');
-
 // valid characters in an access code
 $valid_code_chars = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                           'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',

@@ -15,9 +15,6 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-define('PRESTO_TEMPLATE', '');
-define('TEMPLATES_DIR', '');
-
 define('MASTHEAD', '<div class="apollo-logo">Apollo</div><br>');
 
 /*

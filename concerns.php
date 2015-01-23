@@ -13,8 +13,6 @@
 
 require_once 'spyc/Spyc.php';
 
-define('CONCERNS_DIR', '');
-
 if (!is_readable(CONCERNS_DIR))
     trigger_error('failed to access concerns directory');
 

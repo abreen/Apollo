@@ -27,26 +27,14 @@ define('ACCEPTING', 1);
 define('ACCEPTING_LATE', 2);
 define('CLOSED', 3);
 
-// directory where grade files are sent
-define('DROPBOX_DIR', '');
-
 if (!is_readable(DROPBOX_DIR))
     trigger_error('failed to access dropbox');
-
-// directory where criteria files are found
-define('CRITERIA_DIR', '');
 
 if (!is_readable(CRITERIA_DIR))
     trigger_error('failed to access criteria directory');
 
-// directory where student submissions are uploaded to
-define('SUBMISSIONS_DIR', '');
-
 if (!is_readable(SUBMISSIONS_DIR))
     trigger_error('failed to access submissions directory');
-
-
-define('MAINTENANCE_MODE', FALSE);
 
 if (MAINTENANCE_MODE)
     trigger_error("This application has been put in maintenance mode.\n" .

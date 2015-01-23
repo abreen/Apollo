@@ -1,0 +1,41 @@
+; Apollo configuration file
+; copy this file to apollo.ini and edit that file
+
+; this file is read using PHP's INI parsing functions
+; the [apollo] section is required
+
+; note: relative paths are not supported at all!
+
+[apollo]
+; if this is set to true, Apollo is disabled for everyone
+maintenance_mode = false
+
+; how long randomly generated access codes should be
+code_length = 8
+
+; suffix to add after student usernames to send them e-mail
+email_suffix = "@example.edu"
+
+; directory where hashes of access codes are stored
+accounts_dir = ""
+
+; directory where student grading concerns are stored
+concerns_dir = ""
+
+; directory where grade files are read
+; (this directory should be part of a socrates installation)
+dropbox_dir = ""
+
+; the directory from which criteria YAML files are read
+; (this directory should be part of a socrates installation)
+criteria_dir = ""
+
+; the directory to which uploads are saved
+submissions_dir = ""
+
+; path to a presto template (HTML with variables)
+; (this directory should be part of a presto installation)
+presto_template = ""
+
+; path to template directory (for use with Apollo)
+templates_dir = ""
