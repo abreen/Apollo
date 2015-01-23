@@ -28,7 +28,7 @@ if (!file_exists($path))
 $vars = array();
 
 $vars['filename'] = $_GET['file'];
-$vars['file'] = file_get_contents($path);
+$vars['file'] = htmlspecialchars(file_get_contents($path));
 
 $vars['ps'] = $_GET['ps'];
 $vars['assignment'] = $assignment_names[$_GET['ps']];

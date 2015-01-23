@@ -20,20 +20,30 @@ define('ACCOUNTS_DIR', '');
 // how many characters in the access code
 define('CODE_LENGTH', 8);
 
+define('EMAIL_SUFFIX', '@example.edu');
+
 // valid characters in an access code
 $valid_code_chars = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                           'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
                           'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5',
                           '6', '7', '8', '9');
 
+// used to check user names (only word characters and numbers allowed)
+define('VALID_USERNAME_REGEX', '/\w+/');
+
 // constants returned by authenticate_user()
 define('AUTHENTICATED', 1);
 define('NO_SUCH_USER', 2);
-define('WRONG_CODE', 3);
+define('BAD_CODE', 3);
+define('WRONG_CODE', 4);
 
 // constants returned by register_user()
 define('UNKNOWN_USER', 11);
 define('ALREADY_REGISTERED', 12);
+
+// returned by either authenticate_user() or register_user()
+define('BAD_USERNAME', 21);
+
 
 if (!is_readable(ACCOUNTS_DIR))
     trigger_error('failed to access accounts directory');
@@ -48,6 +58,23 @@ function generate_access_code() {
         $code .= $valid_code_chars[mt_rand(0, $chars_len - 1)];
 
     return $code;
+}
+
+function is_valid_access_code($code) {
+    global $valid_code_chars;
+
+    $len = strlen($code);
+    for ($i = 0; $i < $len; $i++)
+        if (!in_array($code[$i], $valid_code_chars))
+            return FALSE;
+
+    return TRUE;
+}
+
+function is_valid_username($username) {
+    $matches = array();
+    preg_match(VALID_USERNAME_REGEX, $username, $matches);
+    return count($matches) > 0 && $matches[0] === $username;
 }
 
 function hash_file_path($username) {
@@ -67,6 +94,9 @@ function hash_access_code($code) {
  * access code.
  */
 function register_user($username, $code) {
+    if (!is_valid_username($username))
+        return BAD_USERNAME;
+
     $path = hash_file_path($username);
 
     // check if user has an account
@@ -99,6 +129,12 @@ function register_user($username, $code) {
  * constants: AUTHENTICATED, NO_SUCH_USER, WRONG_CODE.
  */
 function authenticate_user($username, $code) {
+    if (!is_valid_username($username))
+        return BAD_USERNAME;
+
+    if (!is_valid_access_code($code))
+        return BAD_CODE;
+
     $path = hash_file_path($username);
 
     if (!is_file($path))
@@ -138,8 +174,8 @@ Note: this is an automated e-mail. If you have issues with Apollo, please
 contact the course staff.
 BODY;
 
-    $to = "$username@bu.edu";
-    $subject = 'CS 111: Your Apollo access code';
+    $to = $username . EMAIL_SUFFIX;
+    $subject = 'Your Apollo access code';
     $headers = 'From: Apollo <apollo@localhost>';
 
     if (!mail($to, $subject, $body, $headers))

@@ -39,7 +39,7 @@ define('CRITERIA_DIR', '');
 if (!is_readable(CRITERIA_DIR))
     trigger_error('failed to access criteria directory');
 
-// directory where student submissions are uploaded
+// directory where student submissions are uploaded to
 define('SUBMISSIONS_DIR', '');
 
 if (!is_readable(SUBMISSIONS_DIR))
@@ -124,44 +124,39 @@ function check_assignment($key) {
 function get_grade_files($username, $assignment) {
     check_assignment($assignment);
 
-    $dir_path = DROPBOX_DIR . DIRECTORY_SEPARATOR . 'ps' . $assignment;
+    $dir_path = DROPBOX_DIR . DIRECTORY_SEPARATOR . $username;
 
-    if (!is_readable(DROPBOX_DIR))
-        trigger_error("failed to access dropbox for ps$assignment");
+    if (!is_dir($dir_path))
+        // if this directory doesn't exist, no grades are present
+        return FALSE;
 
-    $groups = scandir($dir_path);
+    if (!is_readable($dir_path))
+        trigger_error("grade directory not readable: $username");
+
     $grade_files = array();
-    foreach ($groups as $group) {
-        if ($group == '.' || $group == '..')
+    $pattern = '/ps' . $assignment . '([a-z])\-grade\.txt/';
+
+    $files = scandir($dir_path);
+    foreach ($files as $filename) {
+        if ($filename == '.' || $filename == '..' || is_dotfile($filename))
             continue;
 
-        $tar_path = $dir_path . DIRECTORY_SEPARATOR . $group .
-                    DIRECTORY_SEPARATOR . $username . '.tgz';
-
-        if (!is_readable($tar_path))
-            // missing grade for this group for this student
+        $matches = array();
+        if (preg_match($pattern, $filename, $matches) !== 1)
+            // this grade file is not for this assignment
             continue;
 
-        try {
-            $p = new PharData($tar_path);
-        } catch (UnexpectedValueException $e) {
-            return FALSE;
-        }
+        $group = $matches[1];
 
-        $filename = $username . DIRECTORY_SEPARATOR . 'ps' . $assignment .
-                    $group . '-grade.txt';
+        $contents = file_get_contents($dir_path . DIRECTORY_SEPARATOR .
+                                      $filename);
 
-        try {
-            $contents = file_get_contents($p[$filename]);
+        if (preg_match('/Total:\s*(\d+)/', $contents, $matches) !== 1)
+            trigger_error("malformed grade file: $filename");
 
-            $matches = array();
-            preg_match('/Total:\s*(\d+)/', $contents, $matches);
-            $earned = $matches[1];
+        $earned_points = $matches[1];
 
-            $grade_files[$group] = array($contents, $earned);
-        } catch (BadMethodCallException $e) {
-            trigger_error($e);
-        }
+        $grade_files[$group] = array($contents, $earned_points);
     }
 
     if (count($grade_files) == 0)
@@ -520,7 +515,7 @@ function any_value($array, $key) {
 // given a path to a directory, return TRUE if it is empty
 function is_dir_empty($path) {
     if (!is_readable($path))
-        trigger_error($path . ' is not readable');
+        trigger_error("path is not readable: $path");
 
     $d = opendir($path);
     while ($entry = readdir($d))

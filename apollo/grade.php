@@ -63,7 +63,7 @@ if (!$grade_files) {
             $str .= '</div>';
         } else {
             $incomplete = TRUE;
-            $str .= '<div class="right">No grade file this group yet.</div>';
+            $str .= '<div class="right">No grade file yet</div>';
         }
 
         $str .= '</div>';           // end .row
@@ -75,7 +75,9 @@ $str .= '<div class="row">';
 $str .= '<div class="left">Summary</div>';
 
 if ($incomplete) {
-    $str .= '<div class="right"><span class="summary">Incomplete</span></div>';
+    $str .= '<div class="right"><span class="summary">Not completely ' .
+            'graded</span><div class="caption">Your total will be shown ' .
+            'when all groups have been graded.</div></div>';
 } else {
     $str .= '<div class="right score">';
     $str .= '<span class="major">' . $total .'</span>';

@@ -30,6 +30,10 @@ function file_extension($name) {
     return pathinfo($name, PATHINFO_EXTENSION);
 }
 
+function is_dotfile($filename) {
+    return strpos($filename, '.') === 0;
+}
+
 function html_ul($arr) {
     $s = '<ul>';
 

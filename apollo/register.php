@@ -26,6 +26,12 @@ if (isset($_POST['submitted'])) {
 
         $errors = array();
         switch ($return_val) {
+            case BAD_USERNAME:
+                $errors[] = 'The user name you entered contains invalid ' .
+                            'characters. Please check that you typed your ' .
+                            'Kerberos user name correctly.';
+                break;
+
             case UNKNOWN_USER:
                 $errors[] = 'The user name you entered does not seem to ' .
                             'be a valid Kerberos user name with a CS ' .

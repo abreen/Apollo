@@ -22,6 +22,18 @@ if (isset($_SESSION['username'])) {
 if (isset($_POST['submitted'])) {
     // form was submitted
 
+    if (isset($_POST['username']))
+        $_POST['username'] = filter_var($_POST['username'],
+                                        FILTER_SANITIZE_STRING,
+                                        FILTER_FLAG_STRIP_LOW |
+                                        FILTER_FLAG_STRIP_HIGH);
+
+    if (isset($_POST['code']))
+        $_POST['code'] = filter_var($_POST['code'],
+                                    FILTER_SANITIZE_STRING,
+                                    FILTER_FLAG_STRIP_LOW |
+                                    FILTER_FLAG_STRIP_HIGH);
+
     if (!isset($_POST['username'], $_POST['code']) || !$_POST['username'] ||
         !$_POST['code'])
     {
@@ -49,8 +61,18 @@ if (isset($_POST['submitted'])) {
                 header("Location: index.php");
                 exit;
 
+            case BAD_USERNAME:
+                $errors[] = 'Your user name was not entered correctly. ' .
+                            'Make sure there are no invalid ' .
+                            'characters, like spaces or punctuation.';
+                break;
+
             case NO_SUCH_USER:
                 $errors[] = 'The user name you entered is not registered.';
+                break;
+
+            case BAD_CODE:
+                $errors[] = 'Your access code was not entered correctly.';
                 break;
 
             case WRONG_CODE:
@@ -73,13 +95,14 @@ use_body_template('login');
 $vars = array();
 
 if (isset($_GET['logged_out'])) {
-    $vars['message'] = html_admonition('You have been logged out.');
+    $vars['message'] = html_admonition('You have been logged out.',
+                                       'Logged out');
 } else if (isset($_GET['registered'])) {
     $msg = 'An access code has been sent to your BU e-mail address. ' .
            'If you do not receive it within 10 minutes, and the e-mail ' .
            'is not in your junk mail folder, contact the course staff.';
 
-    $vars['message'] = html_admonition($msg);
+    $vars['message'] = html_admonition($msg, 'Registered');
 } else {
     $vars['message'] = '';
 }
