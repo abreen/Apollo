@@ -28,17 +28,17 @@ define('ACCEPTING_LATE', 2);
 define('CLOSED', 3);
 
 if (!is_readable(DROPBOX_DIR))
-    trigger_error('failed to access dropbox');
+    trigger_error('failed to access dropbox: ' . DROPBOX_DIR);
 
 if (!is_readable(CRITERIA_DIR))
-    trigger_error('failed to access criteria directory');
+    trigger_error('failed to access criteria directory: ' . CRITERIA_DIR);
 
 if (!is_readable(SUBMISSIONS_DIR))
-    trigger_error('failed to access submissions directory');
+    trigger_error('failed to access submissions directory: ' .
+                  SUBMISSIONS_DIR);
 
 if (MAINTENANCE_MODE)
-    trigger_error("This application has been put in maintenance mode.\n" .
-                  'We expect to restore service soon.');
+    trigger_error('application has been put in maintenance mode');
 
 
 /*
@@ -119,7 +119,7 @@ function get_grade_files($username, $assignment) {
         return FALSE;
 
     if (!is_readable($dir_path))
-        trigger_error("grade directory not readable: $username");
+        trigger_error("grade directory not readable: $dir_path");
 
     $grade_files = array();
     $pattern = '/ps' . $assignment . '([a-z])\-grade\.txt/';

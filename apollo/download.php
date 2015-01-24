@@ -23,7 +23,7 @@ check_assignment($_GET['ps']);
 $path = submission_path($_GET['ps'], $_SESSION['username'], $_GET['file']);
 
 if (!file_exists($path))
-    trigger_error('file does not exist: ' . $_GET['file']);
+    trigger_error('the specified file does not exist: ' . $_GET['file']);
 
 header('Content-Description: File Transfer');
 header('Content-Type: application/octet-stream');

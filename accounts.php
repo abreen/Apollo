@@ -39,7 +39,8 @@ define('BAD_USERNAME', 21);
 
 
 if (!is_readable(ACCOUNTS_DIR))
-    trigger_error('failed to access accounts directory');
+    trigger_error('failed to access accounts directory: ' .
+                  ACCOUNTS_DIR);
 
 function generate_access_code() {
     global $valid_code_chars;
@@ -93,7 +94,7 @@ function register_user($username, $code) {
     $path = hash_file_path($username);
 
     // check if user has an account
-    $safe_cmd = escapeshellcmd("id $username");
+    $safe_cmd = escapeshellcmd('id ' . escapeshellarg($username));
 
     $cmd_output = array();
     $cmd_return_val = -1;

@@ -14,7 +14,7 @@
 require_once 'spyc/Spyc.php';
 
 if (!is_readable(CONCERNS_DIR))
-    trigger_error('failed to access concerns directory');
+    trigger_error('failed to access concerns directory: ' . CONCERNS_DIR);
 
 /*
  * Given a student's Kerberos username (e.g., "abreen") this function
@@ -34,7 +34,7 @@ function get_concerns($username) {
         $yml_path = $dir_path . DIRECTORY_SEPARATOR . $concern;
 
         if (!is_readable($yml_path))
-            trigger_error("couldn't read concern file $concern");
+            trigger_error("error reading a concerns file: $yml_path");
 
         $parsed = Spyc::YAMLLoad($yml_path);
 
@@ -102,12 +102,13 @@ function check_and_get_subdirectory($username) {
     if (!file_exists($dir_path)) {
         umask(0000);
         if (!mkdir($dir_path)) {
-            trigger_error("failed to create new concerns subdirectory");
+            trigger_error('failed to create new concerns subdirectory: ' .
+                          $dir_path);
         }
     }
 
     if (!is_readable($dir_path))
-        trigger_error("failed to read concerns subdirectory");
+        trigger_error("failed to read concerns subdirectory: $dir_path");
 
     return $dir_path;
 }

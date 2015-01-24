@@ -7,8 +7,16 @@
 ; note: relative paths are not supported at all!
 
 [apollo]
+; if this is set to true, Apollo will display detailed information
+; (e.g., script file name and line number) when an error occurs
+; note: do not use this in a production environment!
+debug_mode = false
+
 ; if this is set to true, Apollo is disabled for everyone
 maintenance_mode = false
+
+; PHP time zone of server (see http://php.net/manual/en/timezones.php)
+timezone = "America/New_York"
 
 ; how long randomly generated access codes should be
 code_length = 8
