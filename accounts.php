@@ -149,6 +149,7 @@ function authenticate_user($username, $code) {
  * containing the access code.
  */
 function send_registration_email($username, $code) {
+    $support_email = SUPPORT_EMAIL;
     $body = <<<BODY
 Dear $username,
 
@@ -165,12 +166,12 @@ If you did not request an access code, no action is required on your
 part --- it is possible that a user misspelled their user name.
 
 Note: this is an automated e-mail. If you have issues with Apollo, please
-contact the course staff.
+contact the course staff ($support_email).
 BODY;
 
     $to = $username . EMAIL_SUFFIX;
     $subject = 'Your Apollo access code';
-    $headers = 'From: Apollo <apollo@localhost>';
+    $headers = "From: Apollo <$support_email>";
 
     if (!mail($to, $subject, $body, $headers))
         trigger_error('error sending registration e-mail');

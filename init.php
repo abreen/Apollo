@@ -19,9 +19,12 @@ $vars = parse_ini_file(APOLLO_INI);
 // define all necessary constants using values from INI file
 define('DEBUG_MODE', $vars['debug_mode']);
 define('MAINTENANCE_MODE', $vars['maintenance_mode']);
+
 define('TIMEZONE', $vars['timezone']);
 define('CODE_LENGTH', $vars['code_length']);
 define('EMAIL_SUFFIX', $vars['email_suffix']);
+define('SUPPORT_EMAIL', $vars['support_email']);
+
 define('ACCOUNTS_DIR', $vars['accounts_dir']);
 define('CONCERNS_DIR', $vars['concerns_dir']);
 define('DROPBOX_DIR', $vars['dropbox_dir']);

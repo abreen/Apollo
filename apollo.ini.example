@@ -24,6 +24,10 @@ code_length = 8
 ; suffix to add after student usernames to send them e-mail
 email_suffix = "@example.edu"
 
+; the address from which Apollo sends e-mail, and to where technical
+; support requests could be sent
+support_email = "support@example.edu"
+
 ; directory where hashes of access codes are stored
 accounts_dir = ""
 
