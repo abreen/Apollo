@@ -6,7 +6,7 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
+require 'lib/init.php';
 
 require 'auth.php';
 

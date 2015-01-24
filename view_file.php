@@ -6,8 +6,8 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
-require '../socrates.php';
+require 'lib/init.php';
+require 'lib/socrates.php';
 
 // redirects to log in page if necessary
 require 'auth.php';
@@ -36,6 +36,6 @@ $vars['assignment'] = $assignment_names[$_GET['ps']];
 $ct = get_change_time($_GET['ps'], $_SESSION['username'], $_GET['file']);
 $vars['ctime'] = $ct;
 
-set_title("Viewing " . $_GET['file']);
-use_body_template("view_file");
+set_title('Viewing ' . $_GET['file']);
+use_body_template('view_file');
 render_page($vars);

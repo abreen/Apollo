@@ -6,8 +6,8 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
-require '../socrates.php';
+require 'lib/init.php';
+require 'lib/socrates.php';
 
 // redirects to log in page if necessary
 require 'auth.php';
@@ -20,8 +20,8 @@ if (!isset($_GET['file']))
 
 check_assignment($_GET['ps']);
 
-set_title("Deleted");
-use_body_template("delete");
+set_title('Deleted');
+use_body_template('delete');
 
 delete_file($_GET['ps'], $_SESSION['username'], $_GET['file']);
 

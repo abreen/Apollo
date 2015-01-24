@@ -6,10 +6,9 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
-
-require '../util.php';
-require '../accounts.php';
+require 'lib/init.php';
+require 'lib/accounts.php';
+require 'lib/util.php';
 
 if (isset($_POST['submitted'])) {
     // the form was submitted

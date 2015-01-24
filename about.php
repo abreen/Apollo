@@ -6,7 +6,7 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
+require 'lib/init.php';
 
 set_title('About Apollo');
 use_body_template('about');

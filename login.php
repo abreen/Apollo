@@ -6,10 +6,9 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
-
-require '../accounts.php';
-require '../util.php';
+require 'lib/init.php';
+require 'lib/accounts.php';
+require 'lib/util.php';
 
 session_start();
 

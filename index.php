@@ -6,13 +6,12 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require '../init.php';
-require '../socrates.php';
+require 'lib/init.php';
+require 'lib/socrates.php';
+require 'lib/util.php';
 
 // redirects to log in page if necessary
 require 'auth.php';
-
-require '../util.php';
 
 set_title('Homework submissions');
 use_body_template('submissions');

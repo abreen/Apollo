@@ -1,118 +1,114 @@
 <?php // 5.3.3
 
 /*
- * concerns.php - simple PHP library for reading/writing YAML concern files
+ * concerns.php - allows for viewing and submitting grading concerns
  *
- * This file contains functions that allow a PHP script to create grading
- * concern files (in YAML format) and save them to the file system, under
- * a directory for a particular user. Functions are also provided for
- * reading the files in again and parsing them into associative arrays.
+ * When a student creates a grading concern produced by this script, a
+ * YAML file is created on the file system, so that graders can review
+ * and update the grader's response there. See the concerns.php file in
+ * the directory above this one for the helper functions.
  *
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
-require_once 'spyc/Spyc.php';
+require 'lib/init.php';
+require 'lib/util.php';
+require 'lib/concerns.php';
 
-if (!is_readable(CONCERNS_DIR))
-    trigger_error('failed to access concerns directory: ' . CONCERNS_DIR);
+// redirects to log in page if necessary
+require 'auth.php';
 
-/*
- * Given a student's Kerberos username (e.g., "abreen") this function
- * returns an array of parsed YAML files corresponding to the concern
- * files present in the file system. If there is no directory for this
- * user in the file system, this function attempts to create it.
- */
-function get_concerns($username) {
-    $dir_path = check_and_get_subdirectory($username);
+$vars = array();
+$vars['username'] = $_SESSION['username'];
 
-    $concern_files = scandir($dir_path);
-    $list = array();
-    foreach ($concern_files as $concern) {
-        if ($concern == '.' || $concern == '..' || !is_yml_file($concern))
-            continue;
+if (isset($_POST['submitted'])) {
 
-        $yml_path = $dir_path . DIRECTORY_SEPARATOR . $concern;
+    if (!isset($_POST['name'], $_POST['ps'],
+               $_POST['issue'], $_POST['comments']))
+    {
+        $errors = array();
 
-        if (!is_readable($yml_path))
-            trigger_error("error reading a concerns file: $yml_path");
+        if (!isset($_POST['name']))
+            $errors[] = 'Please supply us with your full name.';
 
-        $parsed = Spyc::YAMLLoad($yml_path);
+        if (!isset($_POST['ps']))
+            $errors[] = 'Please specify which problem set this pertains to.';
 
-        if (!is_valid_concern($parsed))
-            continue;
+        if (!isset($_POST['issue']))
+            $errors[] = 'Please select the appropriate issue from the list.';
 
-        $list[] = $parsed;
+        if (!isset($_POST['comments']))
+            $errors[] = 'Please describe the issue in the comments field.';
+
+        set_title('Error submitting concern');
+        use_body_template('concern_error');
+        render_page(array('errorslist' => html_ul($errors)));
+        exit;
     }
 
-    return $list;
+    // create the new concern file
+    $name = $_POST['name'];
+    $ps = $_POST['ps'];
+    $issue = $_POST['issue'];
+    $comments = $_POST['comments'];
+
+    $concern = array('name'     => $name,
+                     'ps'       => $ps,
+                     'issue'    => $issue,
+                     'comments' => $comments);
+
+    if (!save_concern($_SESSION['username'], $concern))
+        trigger_error('error saving new concern file');
+
+    $vars['message'] = html_admonition('Your concern has been submitted.');
+    unset($_POST['submitted']);
+
+} else {
+    // don't write an admonition
+    $vars['message'] = '';
 }
 
-/*
- * Given a student's Kerberos username (e.g., "abreen") and values from
- * the HTML form ("name", "ps", "issue", and "comments"), add a "resolved"
- * value of FALSE, an empty "response" field, and write the concern
- * to the file system.
- */
-function save_concern($username, $data) {
-    $dir_path = check_and_get_subdirectory($username);
+set_title("Grading concerns");
 
-    $data['resolved'] = FALSE;
-    $data['response'] = '';
-    $yaml = Spyc::YAMLDump($data, 2, 80, TRUE);
+use_body_template("concerns");
 
-    $concern_path = $dir_path . DIRECTORY_SEPARATOR .
-                    concern_filename($data);
+$concerns = get_concerns($_SESSION['username']);
 
-    if (is_file($concern_path))
-        trigger_error('this concern has already been submitted');
+if (count($concerns) == 0) {
+    $concerns_string = "None.";
+} else {
+    $concerns_string = '<ol>';
 
-    umask(0000);
-    file_put_contents($concern_path, $yaml);
-    return TRUE;
-}
+    foreach ($concerns as $c) {
+        $ps = $c['ps'];
+        $issue = $c['issue'];
+        $comments = $c['comments'];
 
-/*
- * Given a valid concern as an associative array, generate a UNIX-friendly
- * filename with a ".yml" extension.
- */
-function concern_filename($data) {
-    return clean($data['ps']) . '-' .
-           sprintf('%u', crc32(date('U'))) . '.yml';
-}
-
-/*
- * Returns TRUE if this associative array (parsed from a YAML file) has
- * the necessary key-value pairs, and FALSE otherwise.
- */
-function is_valid_concern($parsed) {
-    $necessary_keys = array('ps', 'resolved', 'issue', 'comments');
-    foreach ($necessary_keys as $v)
-        if (!array_key_exists($v, $parsed))
-            return FALSE;
-    return TRUE;
-}
-
-function clean($str) {
-    return strtolower(strtr($str, array(' ' => '_')));
-}
-
-function check_and_get_subdirectory($username) {
-    $dir_path = CONCERNS_DIR . DIRECTORY_SEPARATOR . $username;
-
-    if (!file_exists($dir_path)) {
-        umask(0000);
-        if (!mkdir($dir_path)) {
-            trigger_error('failed to create new concerns subdirectory: ' .
-                          $dir_path);
+        if ($c['resolved'] == TRUE) {
+            $status = '<span class="resolved">Resolved</span>';
+        } else {
+            $status = '<span class="unresolved">Unresolved</span>';
         }
+
+        $table = '<table class="concern">';
+        $table .= '<tr><th>status</th><td>' . $status . '</td></tr>' .
+                  '<tr><th>problem set</th><td>' . $ps . '</td></tr>' .
+                  '<tr><th>issue</th><td>' . $issue . '</td></tr>' .
+                  '<tr><th>comments</th><td><tt>' .
+                       $comments . '</tt></td></tr>';
+
+        if (array_key_exists('response', $c) and $c['response'])
+            $table .= '<tr><th>response</th><td><tt>' . $c['response'] .
+                      '</tt></td></tr>';
+
+        $table .= '</table>';
+
+        $concerns_string .= "<li>" . $table . "</li>";
     }
 
-    if (!is_readable($dir_path))
-        trigger_error("failed to read concerns subdirectory: $dir_path");
-
-    return $dir_path;
+    $concerns_string .= '</ol>';
 }
 
-function is_yml_file($string) {
-    return stripos(strrev($string), 'lmy.') === 0;
-}
+$vars['concernslist'] = $concerns_string;
+
+render_page($vars);
