@@ -13,25 +13,25 @@ require 'lib/util.php';
 // redirects to log in page if necessary
 require 'auth.php';
 
-if (!isset($_GET['ps']))
-    trigger_error('no assignment number specified');
+if (!isset($_GET['type']) || !isset($_GET['num']))
+    trigger_error('invalid or not enough parameters');
 
-$ps = $_GET['ps'];
+check_assignment($_GET['num'], $_GET['type']);
 
-check_assignment($ps);
+$num = $_GET['num'];
+$type = $_GET['type'];
+$assignment_name = assignment_name($num, $type);
 
-$assignment_name = $assignment_names[$ps];
-
-set_title("Grade details for " . $assignment_name);
-use_body_template("grade");
+set_title('Grade details for ' . $assignment_name);
+use_body_template('grade');
 
 $vars = array();
 $vars['username'] = $_SESSION['username'];
 $vars['assignment'] = $assignment_name;
 
-$grade_files = get_grade_files($_SESSION['username'], $ps);
+$grade_files = get_grade_files($_SESSION['username'], $num, $type);
 
-$str = "";
+$str = '';
 $incomplete = FALSE;
 
 if (!$grade_files) {
@@ -40,7 +40,7 @@ if (!$grade_files) {
     $str .= '</div></div>';
     $incomplete = TRUE;
 } else {
-    $crits = get_criteria_files($ps);
+    $crits = get_criteria_files($num, $type);
     $groups = get_groups($crits);
     $total_possible = get_total_points($crits);
     $total = 0;

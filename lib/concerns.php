@@ -96,16 +96,24 @@ function clean($str) {
     return strtolower(strtr($str, array(' ' => '_')));
 }
 
+function concerns_path($username) {
+    return CONCERNS_DIR . DIRECTORY_SEPARATOR . $username;
+}
+
+function create_concerns_subdirectory($username) {
+    $dir_path = concerns_path($username);
+    umask(0000);
+    if (!mkdir($dir_path)) {
+        trigger_error('failed to create new concerns subdirectory: ' .
+                      $dir_path);
+    }
+}
+
 function check_and_get_subdirectory($username) {
     $dir_path = CONCERNS_DIR . DIRECTORY_SEPARATOR . $username;
 
-    if (!file_exists($dir_path)) {
-        umask(0000);
-        if (!mkdir($dir_path)) {
-            trigger_error('failed to create new concerns subdirectory: ' .
-                          $dir_path);
-        }
-    }
+    if (!file_exists($dir_path))
+        create_concerns_subdirectory($username);
 
     if (!is_readable($dir_path))
         trigger_error("failed to read concerns subdirectory: $dir_path");

@@ -71,28 +71,81 @@ $pre_due_date_window = new DateInterval('P1W');         // 1 week
  */
 $grace_period_window = new DateInterval('PT10M');       // 10 minutes
 
-$assignment_names = array(0  => 'Problem Set 0',
-                          1  => 'Problem Set 1',
-                          2  => 'Problem Set 2',
-                          3  => 'Problem Set 3',
-                          4  => 'Problem Set 4',
-                          5  => 'Problem Set 5',
-                          6  => 'Problem Set 6',
-                          7  => 'Problem Set 7',
-                          8  => 'Problem Set 8',
-                          9  => 'Problem Set 9',
-                          10 => 'Problem Set 10',
-                          11 => 'Problem Set 11',
-                          12 => 'Final Project');
 
-// if the specified assignment number is incorrect, trigger an error
-function check_assignment($key) {
-    global $assignment_names;
+/*
+ * Assignments can be either problem sets or labs. These constants
+ * are provided since functions may cause different effects for
+ * different assignment types.
+ */
+define('PROBLEM_SET', 'ps');
+define('LAB', 'lab');
 
-    if (array_key_exists($key, $assignment_names) === FALSE)
-        trigger_error("invalid assignment number: $key");
+$ps_names = array(0  => 'Problem Set 0',
+                  1  => 'Problem Set 1',
+                  2  => 'Problem Set 2',
+                  3  => 'Problem Set 3',
+                  4  => 'Problem Set 4',
+                  5  => 'Problem Set 5',
+                  6  => 'Problem Set 6',
+                  7  => 'Problem Set 7',
+                  8  => 'Problem Set 8',
+                  9  => 'Problem Set 9',
+                  10 => 'Problem Set 10',
+                  11 => 'Problem Set 11',
+                  12 => 'Final Project');
+
+$lab_names = array(1  => 'Lab 1',
+                   2  => 'Lab 2',
+                   4  => 'Lab 4',
+                   5  => 'Lab 5',
+                   6  => 'Lab 6',
+                   7  => 'Lab 7',
+                   8  => 'Lab 8',
+                   9  => 'Lab 9',
+                   10 => 'Lab 10',
+                   11 => 'Lab 11');
+
+function ps_exists($key) {
+    global $ps_names;
+
+    return array_key_exists($key, $ps_names);
 }
 
+function lab_exists($key) {
+    global $lab_names;
+
+    return array_key_exists($key, $lab_names);
+}
+
+function check_assignment($key, $type) {
+    switch ($type) {
+        case PROBLEM_SET:
+            if (!ps_exists($key))
+                trigger_error("invalid problem set number: $key");
+            break;
+
+        case LAB:
+            if (!lab_exists($key))
+                trigger_error("invalid lab number: $key");
+            break;
+
+        default:
+            return trigger_error("invalid assignment type: $type");
+    }
+}
+
+function assignment_name($key, $type) {
+    global $ps_names, $lab_names;
+
+    switch ($type) {
+        case PROBLEM_SET:
+            return $ps_names[$key];
+        case LAB:
+            return $lab_names[$key];
+        default:
+            return trigger_error("invalid assignment type: $type");
+    }
+}
 
 /*
  * Functions
@@ -106,8 +159,8 @@ function check_assignment($key) {
  * earned by the student. This function returns FALSE if the assignment
  * has not been graded at all.
  */
-function get_grade_files($username, $assignment) {
-    check_assignment($assignment);
+function get_grade_files($username, $num, $type) {
+    check_assignment($num, $type);
 
     $dir_path = DROPBOX_DIR . DIRECTORY_SEPARATOR . $username;
 
@@ -119,7 +172,11 @@ function get_grade_files($username, $assignment) {
         trigger_error("grade directory not readable: $dir_path");
 
     $grade_files = array();
-    $pattern = '/ps' . $assignment . '([a-z])\-grade\.txt/';
+
+    if ($type == PROBLEM_SET)
+        $pattern = '/ps' . $num. '([a-z])\-grade\.txt/';
+    else
+        $pattern = '/lab' . $num . '([a-z])\-grade\.txt/';
 
     $files = scandir($dir_path);
     foreach ($files as $filename) {
@@ -151,16 +208,22 @@ function get_grade_files($username, $assignment) {
 }
 
 /*
- * Given an assignment number (e.g., "10"), return an associative array
+ * Given an assignment number (e.g., "10") and an assignment type
+ * (e.g., LAB or PROBLEM_SET), return an associative array
  * mapping file names (e.g., "ps10pr2.py") to an associative array
  * containing mappings from DateTime objects to late deduction
  * multipliers. The DateTime objects are the due dates parsed from the
- * socrates criteria files (all groups).
+ * socrates criteria files (all groups). If there are no criteria files
+ * for the assignment, this function returns NULL.
  */
-function get_files_and_dates($assignment) {
-    check_assignment($assignment);
+function get_files_and_dates($num, $type) {
+    check_assignment($num, $type);
 
-    $groups = get_criteria_files($assignment);
+    $groups = get_criteria_files($num, $type);
+
+    if ($groups === NULL)
+        return NULL;
+
     $info = array();
 
     foreach ($groups as $parsed) {
@@ -193,13 +256,20 @@ function get_files_and_dates($assignment) {
 /*
  * Given an assignment number (e.g., "10"), return an array of parsed
  * YAML criteria files for that assignment, drawn from the directory
- * CRITERIA_DIR.
+ * CRITERIA_DIR. If there are no criteria files for the specified
+ * assignment, this function returns NULL.
  */
-function get_criteria_files($assignment) {
-    check_assignment($assignment);
+function get_criteria_files($num, $type) {
+    check_assignment($num, $type);
 
-    $crit_files_path = CRITERIA_DIR . DIRECTORY_SEPARATOR .
-                       'ps' . $assignment;
+    $crit_files_path = CRITERIA_DIR . DIRECTORY_SEPARATOR;
+    if ($type == PROBLEM_SET)
+        $crit_files_path .= 'ps' . $num;
+    else
+        $crit_files_path .= 'lab' . $num;
+
+    if (!is_dir($crit_files_path))
+        return NULL;
 
     $groups = scandir($crit_files_path);
 
@@ -401,8 +471,8 @@ function due_dates($info) {
  * subdirectory for the assignment also doesn't exist, this function will
  * create it. This function returns TRUE if the file was moved correctly.
  */
-function save_file($ps, $username, $tmp_path, $dest_name) {
-    check_assignment($ps);
+function save_file($num, $type, $username, $tmp_path, $dest_name) {
+    check_assignment($num, $type);
 
     $dest_path = SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $username;
 
@@ -412,7 +482,10 @@ function save_file($ps, $username, $tmp_path, $dest_name) {
             trigger_error('failed to create new submissions user directory');
     }
 
-    $dest_path .= DIRECTORY_SEPARATOR . 'ps' . $ps;
+    if ($type == PROBLEM_SET)
+        $dest_path .= DIRECTORY_SEPARATOR . 'ps' . $num;
+    else
+        $dest_path .= DIRECTORY_SEPARATOR . 'lab' . $num;
 
     if (!file_exists($dest_path)) {
         umask(0000);
@@ -440,25 +513,25 @@ function files_with_due_date($info, $pair) {
  */
 
 // form a path to a file in a student submission directory
-function submission_path($ps, $username, $file) {
-    return submission_dir_path($ps, $username) .
+function submission_path($ps, $type, $username, $file) {
+    return submission_dir_path($ps, $type, $username) .
            DIRECTORY_SEPARATOR . $file;
 }
 
 // form a path to a student's submission directory
-function submission_dir_path($ps, $username) {
+function submission_dir_path($ps, $type, $username) {
     return SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $username .
-           DIRECTORY_SEPARATOR . 'ps' . $ps;
+           DIRECTORY_SEPARATOR . $type . $ps;
 }
 
 // return TRUE if a student has submitted a particular file
-function has_submitted($ps, $username, $file) {
-    return is_file(submission_path($ps, $username, $file));
+function has_submitted($ps, $type, $username, $file) {
+    return is_file(submission_path($ps, $type, $username, $file));
 }
 
 // return TRUE if a student has submitted anything for an assignment
-function anything_submitted($ps, $username) {
-    $path = submission_dir_path($ps, $username);
+function anything_submitted($ps, $type, $username) {
+    $path = submission_dir_path($ps, $type, $username);
 
     if (!is_dir($path))
         return FALSE;
@@ -467,14 +540,14 @@ function anything_submitted($ps, $username) {
 }
 
 // return a date (in DATE_FORMAT_WITH_SECONDS) of a submitted file's ctime
-function get_change_time($ps, $username, $file) {
+function get_change_time($ps, $type, $username, $file) {
     return date(DATE_FORMAT_WITH_SECONDS,
-                filectime(submission_path($ps, $username, $file)));
+                filectime(submission_path($ps, $type, $username, $file)));
 }
 
 // unceremoniously delete a student's submission file
-function delete_file($ps, $username, $file) {
-    return unlink(submission_path($ps, $username, $file));
+function delete_file($ps, $type, $username, $file) {
+    return unlink(submission_path($ps, $type, $username, $file));
 }
 
 // given a path, return TRUE if the file ends in '.yml'

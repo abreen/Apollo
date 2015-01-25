@@ -12,15 +12,16 @@ require 'lib/socrates.php';
 // redirects to log in page if necessary
 require 'auth.php';
 
-if (!isset($_GET['ps']))
-    trigger_error('no assignment number specified');
+if (!isset($_GET['type']) || !isset($_GET['num']) || !isset($_GET['file']))
+    trigger_error('invalid or not enough parameters');
 
-if (!isset($_GET['file']))
-    trigger_error('no file specified');
+check_assignment($_GET['num'], $_GET['type']);
 
-check_assignment($_GET['ps']);
+$num = $_GET['num'];
+$type = $_GET['type'];
+$assignment_name = htmlspecialchars(assignment_name($num, $type));
 
-$path = submission_path($_GET['ps'], $_SESSION['username'], $_GET['file']);
+$path = submission_path($num, $type, $_SESSION['username'], $_GET['file']);
 
 if (!file_exists($path))
     trigger_error('the specified file does not exist: ' . $_GET['file']);

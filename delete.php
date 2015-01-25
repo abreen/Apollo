@@ -12,22 +12,22 @@ require 'lib/socrates.php';
 // redirects to log in page if necessary
 require 'auth.php';
 
-if (!isset($_GET['ps']))
-    trigger_error('no assignment number specified');
+if (!isset($_GET['type']) || !isset($_GET['num']) || !isset($_GET['file']))
+    trigger_error('invalid or not enough parameters');
 
-if (!isset($_GET['file']))
-    trigger_error('no file specified');
+check_assignment($_GET['num'], $_GET['type']);
 
-check_assignment($_GET['ps']);
+$num = $_GET['num'];
+$type = $_GET['type'];
+
+delete_file($num, $type, $_SESSION['username'], $_GET['file']);
+
+$vars = array();
+
+$vars['assignment'] = htmlspecialchars(assignment_name($num, $type));
+$vars['filename'] = $_GET['file'];
+$vars['url'] = "upload.php?type=$type&num=$num";
 
 set_title('Deleted');
 use_body_template('delete');
-
-delete_file($_GET['ps'], $_SESSION['username'], $_GET['file']);
-
-$vars = array();
-$vars['filename'] = $_GET['file'];
-$vars['ps'] = $_GET['ps'];
-$vars['assignment'] = htmlspecialchars($assignment_names[$_GET['ps']]);
-
 render_page($vars);

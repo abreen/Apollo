@@ -13,15 +13,16 @@ require 'lib/util.php';
 // redirects to log in page if necessary
 require 'auth.php';
 
-if (!isset($_GET['ps']))
-    trigger_error('no assignment number specified');
+if (!isset($_GET['type']) || !isset($_GET['num']))
+    trigger_error('invalid or not enough parameters');
 
-$ps = $_GET['ps'];
+check_assignment($_GET['num'], $_GET['type']);
 
-check_assignment($ps);
+$num = $_GET['num'];
+$type = $_GET['type'];
+$assignment_name = htmlspecialchars(assignment_name($num, $type));
 
-$expected_files = get_files_and_dates($ps);
-$assignment_name = htmlspecialchars($assignment_names[$ps]);
+$expected_files = get_files_and_dates($num, $type);
 
 $vars = array();
 $vars['username'] = $_SESSION['username'];
@@ -66,7 +67,7 @@ if (isset($_POST['submitted'])) {
             continue;
         }
 
-        if (!save_file($ps, $_SESSION['username'],
+        if (!save_file($num, $type, $_SESSION['username'],
                        $data['tmp_name'], $filename))
         {
             $errors[$filename] = 'An error occurred saving this file.';
@@ -101,13 +102,13 @@ if (isset($_POST['submitted'])) {
 
     $vars['failures'] = $str;
 
-    $vars['ps'] = $ps;
-
     $c = count($successes);
     if ($c == 1)
         $vars['summary'] = 'One file was uploaded successfully.';
     else
         $vars['summary'] = $c . ' files were uploaded successfully.';
+
+    $vars['url'] = "upload.php?type=$type&num=$num";
 
     set_title('Upload results for ' . $assignment_name);
     use_body_template('upload_results');
@@ -143,9 +144,10 @@ foreach ($expected_files as $file => $dates) {
     // right part: info. and upload field
     $str .= '<div class="right">';
 
-    if (has_submitted($ps, $_SESSION['username'], $file)) {
-        $url = '?ps=' . $ps . '&file=' . $file;
-        $ctime = get_change_time($ps, $_SESSION['username'], $file);
+    if (has_submitted($num, $type, $_SESSION['username'], $file)) {
+        $url = '?type=' . $type . '&num=' . $num . '&file=' . $file;
+        $ctime = get_change_time($num, $type,
+                                 $_SESSION['username'], $file);
 
         $str .= '<tt>' . $file . '</tt> was uploaded on ' .
                 $ctime . '.<br>';
