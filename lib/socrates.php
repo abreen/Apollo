@@ -37,9 +37,6 @@ if (!is_readable(SUBMISSIONS_DIR))
     trigger_error('failed to access submissions directory: ' .
                   SUBMISSIONS_DIR);
 
-if (MAINTENANCE_MODE)
-    trigger_error('application has been put in maintenance mode');
-
 
 /*
  * If this is set to TRUE, submissions for all assignments are allowed,
