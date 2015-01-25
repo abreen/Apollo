@@ -17,6 +17,7 @@ function html_safe($str) {
                            '.' => '_',
                            ',' => '_',
                            ':' => '_',
+                           '&' => '_',
                            );
 
     return strtolower(strtr($str, $replace_pairs));

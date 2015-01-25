@@ -1,6 +1,6 @@
 <?php // 5.3.3
 
-define('APOLLO_VERSION', '1.3');
+define('APOLLO_VERSION', '1.5');
 
 // path to the Apollo installation
 // note: this will work as long as this file (init.php) is in the lib directory
@@ -9,8 +9,10 @@ define('APOLLO_LIB_PATH', dirname(__FILE__));
 // note: this will work as long as the INI file is in the lib directory
 define('APOLLO_INI', APOLLO_LIB_PATH . DIRECTORY_SEPARATOR . 'apollo.ini');
 
-if (!is_file(APOLLO_INI))
-    trigger_error('could not load configuration file: ' . APOLLO_INI);
+if (!is_file(APOLLO_INI)) {
+    echo 'could not load configuration file';
+    exit;
+}
 
 $vars = parse_ini_file(APOLLO_INI);
 

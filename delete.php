@@ -28,6 +28,6 @@ delete_file($_GET['ps'], $_SESSION['username'], $_GET['file']);
 $vars = array();
 $vars['filename'] = $_GET['file'];
 $vars['ps'] = $_GET['ps'];
-$vars['assignment'] = $assignment_names[$_GET['ps']];
+$vars['assignment'] = htmlspecialchars($assignment_names[$_GET['ps']]);
 
 render_page($vars);

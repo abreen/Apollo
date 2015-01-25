@@ -31,7 +31,7 @@ $vars['filename'] = $_GET['file'];
 $vars['file'] = htmlspecialchars(file_get_contents($path));
 
 $vars['ps'] = $_GET['ps'];
-$vars['assignment'] = $assignment_names[$_GET['ps']];
+$vars['assignment'] = htmlspecialchars($assignment_names[$_GET['ps']]);
 
 $ct = get_change_time($_GET['ps'], $_SESSION['username'], $_GET['file']);
 $vars['ctime'] = $ct;

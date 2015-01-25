@@ -21,7 +21,7 @@ $ps = $_GET['ps'];
 check_assignment($ps);
 
 $expected_files = get_files_and_dates($ps);
-$assignment_name = $assignment_names[$ps];
+$assignment_name = htmlspecialchars($assignment_names[$ps]);
 
 $vars = array();
 $vars['username'] = $_SESSION['username'];

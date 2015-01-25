@@ -35,7 +35,7 @@ foreach ($nums as $ps) {
 
     $str .= '<div class="row">';
 
-    $str .= '<div class="left">' . $assignment_names[$ps] .
+    $str .= '<div class="left">' . htmlspecialchars($assignment_names[$ps]) .
             "</div>\n";
 
     $str .= '<div class="right">';
