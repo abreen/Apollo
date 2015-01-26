@@ -108,6 +108,16 @@ if (isset($_POST['submitted'])) {
     else
         $vars['summary'] = $c . ' files were uploaded successfully.';
 
+    if (count($errors) == 1) {
+        $vars['message'] = html_admonition('There was a problem with your ' .
+                                           'upload.', 'Error', 'error');
+    } else if (count($errors) > 1) {
+        $vars['message'] = html_admonition('There were problems with your ' .
+                                           'upload.', 'Error', 'error');
+    } else {
+        $vars['message'] = '';
+    }
+
     $vars['url'] = "upload.php?type=$type&num=$num";
 
     set_title('Upload results for ' . $assignment_name);
