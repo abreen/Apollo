@@ -21,6 +21,10 @@ $num = $_GET['num'];
 $type = $_GET['type'];
 $assignment_name = htmlspecialchars(assignment_name($num, $type));
 
+// protects against attacks where '..' could be used in file path
+if (basename($_GET['file']) !== $_GET['file'])
+    trigger_error('invalid file path');
+
 $path = submission_path($num, $type, $_SESSION['username'], $_GET['file']);
 
 if (!file_exists($path))

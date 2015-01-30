@@ -20,6 +20,10 @@ check_assignment($_GET['num'], $_GET['type']);
 $num = $_GET['num'];
 $type = $_GET['type'];
 
+// protects against attacks where '..' could be used in file path
+if (basename($_GET['file']) !== $_GET['file'])
+    trigger_error('invalid file path');
+
 delete_file($num, $type, $_SESSION['username'], $_GET['file']);
 
 $vars = array();
