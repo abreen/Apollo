@@ -53,9 +53,16 @@ if (isset($_POST['submitted'])) {
         }
 
         // send the access code via e-mail
-        send_registration_email($_POST['username'], $code);
+        if (SHOW_ACCESS_CODE) {
+            set_title('Your access code');
+            use_body_template('access_code');
+            render_page(array('code' => $code));
 
-        header("Location: login.php?registered");
+        } else {
+            send_registration_email($_POST['username'], $code);
+            header("Location: login.php?registered");
+        }
+
     }
 
     exit;

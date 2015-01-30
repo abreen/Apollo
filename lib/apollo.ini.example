@@ -15,11 +15,20 @@ debug_mode = false
 ; if this is set to true, Apollo is disabled for everyone
 maintenance_mode = false
 
+; when registering a new user, whether to run the "id" command to see if the
+; user account exists on the system
+; note: UNIX systems only
+check_new_user_exists = false
+
 ; PHP time zone of server (see http://php.net/manual/en/timezones.php)
 timezone = "America/New_York"
 
 ; how long randomly generated access codes should be
 code_length = 8
+
+; if this is set to true, Apollo will show newly registered user their access
+; code *instead* of e-mailing them
+show_access_code = false
 
 ; suffix to add after student usernames to send them e-mail
 email_suffix = "@example.edu"

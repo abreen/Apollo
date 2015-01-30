@@ -93,16 +93,18 @@ function register_user($username, $code) {
 
     $path = hash_file_path($username);
 
-    // check if user has an account
-    $safe_cmd = escapeshellcmd('id ' . escapeshellarg($username));
+    if (CHECK_NEW_USER_EXISTS) {
+        // check if user has an account
+        $safe_cmd = escapeshellcmd('id ' . escapeshellarg($username));
 
-    $cmd_output = array();
-    $cmd_return_val = -1;
+        $cmd_output = array();
+        $cmd_return_val = -1;
 
-    exec($safe_cmd, $cmd_output, $cmd_return_val);
+        exec($safe_cmd, $cmd_output, $cmd_return_val);
 
-    if ($cmd_return_val !== 0)
-        return UNKNOWN_USER;
+        if ($cmd_return_val !== 0)
+            return UNKNOWN_USER;
+    }
 
     // check if user already has a code
     if (is_file($path))
