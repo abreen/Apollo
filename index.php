@@ -13,8 +13,6 @@ require 'lib/util.php';
 // redirects to log in page if necessary
 require 'auth.php';
 
-$nums = array(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
-
 $status_map =
     array(TOO_EARLY => array('early', 'Not accepting submissions'),
           ACCEPTING => array('accepting', 'Accepting submissions'),
@@ -23,13 +21,14 @@ $status_map =
 function create_row($num, $type) {
     global $status_map;
 
+    $info = get_files_and_dates($num, $type);
+    if ($info === NULL)
+        // no criteria files for this assignment
+        return '';
+
     $str = '';
 
     $parts = get_grade_files($_SESSION['username'], $num, $type);
-    $info = get_files_and_dates($num, $type);
-
-    if ($info === NULL)
-        return '';
 
     $status = assignment_upload_status($info);
 
@@ -95,14 +94,17 @@ $vars['username'] = $_SESSION['username'];
 
 $str = '';
 
-foreach ($nums as $num) {
-    if (ps_exists($num))
-        $str .= create_row($num, PROBLEM_SET);
+// note: $ps_names comes from lib/socrates.php
+foreach ($ps_names as $num => $ps_name)
+    $str .= create_row($num, PROBLEM_SET);
 
-    if (lab_exists($num))
-        $str .= create_row($num, LAB);
-}
+$vars['psrows'] = $str;
+$str = '';
 
-$vars['rows'] = $str;
+// note: $lab_names comes from lib/socrates.php
+foreach ($lab_names as $num => $lab_name)
+    $str .= create_row($num, LAB);
+
+$vars['labrows'] = $str;
 
 render_page($vars);
