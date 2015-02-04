@@ -74,5 +74,9 @@ function http_error($num, $str, $file, $line) {
 
 set_error_handler('http_error');
 
-if (MAINTENANCE_MODE)
-    trigger_error('application has been put in maintenance mode');
+if (MAINTENANCE_MODE) {
+    set_title('Maintenance mode');
+    use_body_template('maintenance');
+    render_page();
+    exit;
+}
