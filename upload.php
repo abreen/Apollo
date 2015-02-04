@@ -171,13 +171,6 @@ foreach ($expected_files as $file => $dates) {
                     '">View this file</a></li>';
         }
 
-        if ($allowed) {
-            // if the deadline has passed, we don't want students to
-            // be able to mess with the files
-            $str .= '<li><a href="delete.php' . $url .
-                    '">Delete this file</a></li>';
-        }
-
         $str .= '</ul>';
     }
 
