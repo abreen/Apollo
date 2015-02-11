@@ -549,6 +549,12 @@ function get_change_time($ps, $type, $username, $file) {
                 filectime(submission_path($ps, $type, $username, $file)));
 }
 
+// return a date (in DATE_FORMAT_WITH_SECONDS) of a submitted file's mtime
+function get_modification_time($ps, $type, $username, $file) {
+    return date(DATE_FORMAT_WITH_SECONDS,
+                filemtime(submission_path($ps, $type, $username, $file)));
+}
+
 // unceremoniously delete a student's submission file
 function delete_file($ps, $type, $username, $file) {
     return unlink(submission_path($ps, $type, $username, $file));

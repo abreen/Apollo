@@ -46,7 +46,15 @@ if (isset($_POST['submitted'])) {
             continue;
 
         if ($data['error'] != UPLOAD_ERR_OK) {
-            $errors[$filename] = 'An error occurred uploading this file.';
+            if ($data['error'] == UPLOAD_ERR_INI_SIZE ||
+                $data['error'] == UPLOAD_ERR_FORM_SIZE)
+            {
+                $errors[$filename] = 'The file you tried to upload is ' .
+                                     'too large.';
+            } else {
+                $errors[$filename] = 'An error occurred uploading this file.';
+            }
+
             continue;
         }
 
@@ -156,8 +164,8 @@ foreach ($expected_files as $file => $dates) {
 
     if (has_submitted($num, $type, $_SESSION['username'], $file)) {
         $url = '?type=' . $type . '&num=' . $num . '&file=' . $file;
-        $ctime = get_change_time($num, $type,
-                                 $_SESSION['username'], $file);
+        $ctime = get_modification_time($num, $type,
+                                       $_SESSION['username'], $file);
 
         $str .= '<tt>' . $file . '</tt> was uploaded on ' .
                 $ctime . '.<br>';
