@@ -39,7 +39,7 @@ support_email = "support@example.edu"
 
 ; mode to use when Apollo creates new files (e.g., when student uploads
 ; are created)
-new_file_mode = 0333
+new_file_mode = 0666
 
 ; mode to use when Apollo creates new directories (e.g., when student's
 ; upload directory is first created)
