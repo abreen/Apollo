@@ -61,7 +61,8 @@ function html_pre($s) {
     $replace_pairs = array(
         '	' => '<span class="tab"></span>&nbsp;&nbsp;&nbsp;&nbsp;',
         ' ' => '<span class="sp"></span> ',
-        "\n" => '<span class="nl"></span><br>'
+        "\n" => '<span class="nl"></span><br>',
+        "\r" => ''
     );
 
     return '<div class="pre">' . strtr(htmlspecialchars($s), $replace_pairs) .
