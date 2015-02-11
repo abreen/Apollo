@@ -46,7 +46,15 @@ if (isset($_POST['submitted'])) {
             continue;
 
         if ($data['error'] != UPLOAD_ERR_OK) {
-            $errors[$filename] = 'An error occurred uploading this file.';
+            if ($data['error'] == UPLOAD_ERR_INI_SIZE ||
+                $data['error'] == UPLOAD_ERR_FORM_SIZE)
+            {
+                $errors[$filename] = 'The file you tried to upload is ' .
+                                     'too large.';
+            } else {
+                $errors[$filename] = 'An error occurred uploading this file.';
+            }
+
             continue;
         }
 
