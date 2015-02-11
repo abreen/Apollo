@@ -26,6 +26,15 @@ if (!is_readable(CONCERNS_DIR))
 function get_concerns($username) {
     $dir_path = check_and_get_subdirectory($username);
 
+    /*
+     * If check_and_get_subdirectory() needed to create directories,
+     * the file system might not actually create the directory by the time
+     * we get here. However, we know this new directory will be empty,
+     * so we can return an empty array.
+     */
+    if (!file_exists($dir_path))
+        return array();
+
     $concern_files = scandir($dir_path);
     $list = array();
     foreach ($concern_files as $concern) {
