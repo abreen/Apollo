@@ -37,6 +37,14 @@ email_suffix = "@example.edu"
 ; support requests could be sent
 support_email = "support@example.edu"
 
+; mode to use when Apollo creates new files (e.g., when student uploads
+; are created)
+new_file_mode = 0333
+
+; mode to use when Apollo creates new directories (e.g., when student's
+; upload directory is first created)
+new_dir_mode = 0777
+
 ; directory where hashes of access codes are stored
 accounts_dir = ""
 

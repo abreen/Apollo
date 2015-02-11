@@ -11,6 +11,7 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
+require_once 'files.php';
 require_once 'spyc/Spyc.php';
 
 if (!is_readable(CONCERNS_DIR))
@@ -66,8 +67,7 @@ function save_concern($username, $data) {
     if (is_file($concern_path))
         trigger_error('this concern has already been submitted');
 
-    umask(0000);
-    file_put_contents($concern_path, $yaml);
+    apollo_new_file($concern_path, $yaml);
     return TRUE;
 }
 
@@ -102,11 +102,7 @@ function concerns_path($username) {
 
 function create_concerns_subdirectory($username) {
     $dir_path = concerns_path($username);
-    umask(0000);
-    if (!mkdir($dir_path)) {
-        trigger_error('failed to create new concerns subdirectory: ' .
-                      $dir_path);
-    }
+    apollo_new_directory($dir_path);
 }
 
 function check_and_get_subdirectory($username) {

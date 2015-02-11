@@ -27,6 +27,9 @@ define('SHOW_ACCESS_CODE', $vars['show_access_code']);
 define('EMAIL_SUFFIX', $vars['email_suffix']);
 define('SUPPORT_EMAIL', $vars['support_email']);
 
+define('NEW_FILE_MODE', intval($vars['new_file_mode'], 0));
+define('NEW_DIR_MODE', intval($vars['new_dir_mode'], 0));
+
 define('ACCOUNTS_DIR', $vars['accounts_dir']);
 define('CONCERNS_DIR', $vars['concerns_dir']);
 define('DROPBOX_DIR', $vars['dropbox_dir']);

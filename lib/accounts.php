@@ -15,6 +15,8 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
+require_once 'files.php';
+
 // valid characters in an access code
 $valid_code_chars = array('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
                           'k', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u',
@@ -112,11 +114,7 @@ function register_user($username, $code) {
 
     $hash = hash_access_code($code);
 
-    if (!file_put_contents($path, $hash)) {
-        $err = error_get_last();
-        $msg = $err['message'];
-        trigger_error("error registering user: $msg");
-    }
+    apollo_new_file($path, $hash);
 }
 
 /*

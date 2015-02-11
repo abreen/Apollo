@@ -12,6 +12,7 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
+require_once 'files.php';
 require_once 'spyc/Spyc.php';
 
 /*
@@ -477,26 +478,28 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
 
     $dest_path = SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $username;
 
-    if (!file_exists($dest_path)) {
-        umask(0000);
-        if (!mkdir($dest_path))
-            trigger_error('failed to create new submissions user directory');
-    }
+    if (!file_exists($dest_path))
+        // create new directory for this user
+        apollo_new_directory($dest_path);
 
     if ($type == PROBLEM_SET)
         $dest_path .= DIRECTORY_SEPARATOR . 'ps' . $num;
     else
         $dest_path .= DIRECTORY_SEPARATOR . 'lab' . $num;
 
-    if (!file_exists($dest_path)) {
-        umask(0000);
-        if (!mkdir($dest_path))
-            trigger_error('failed to create new submissions subdirectory');
-    }
+    if (!file_exists($dest_path))
+        // create new subdirectory for this assignment 
+        apollo_new_directory($dest_path);
 
     $dest_path .= DIRECTORY_SEPARATOR . $dest_name;
 
-    return move_uploaded_file($tmp_path, $dest_path);
+    if (move_uploaded_file($tmp_path, $dest_path) === FALSE)
+        trigger_error("uploaded file could not be moved: $tmp_path");
+
+    if (chmod($dest_path, NEW_FILE_MODE) === FALSE)
+        trigger_error("error setting mode of uploaded file: $dest_path");
+
+    return TRUE;
 }
 
 function files_with_due_date($info, $pair) {
