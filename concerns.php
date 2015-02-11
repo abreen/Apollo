@@ -23,12 +23,12 @@ $vars['username'] = $_SESSION['username'];
 
 if (isset($_POST['submitted'])) {
 
-    if (!isset($_POST['name'], $_POST['ps'],
-               $_POST['issue'], $_POST['comments']))
+    if (!isset($_POST['ps'], $_POST['issue']) || empty($_POST['name']) ||
+        empty($_POST['comments']))
     {
         $errors = array();
 
-        if (!isset($_POST['name']))
+        if (empty($_POST['name']))
             $errors[] = 'Please supply us with your full name.';
 
         if (!isset($_POST['ps']))
@@ -37,7 +37,7 @@ if (isset($_POST['submitted'])) {
         if (!isset($_POST['issue']))
             $errors[] = 'Please select the appropriate issue from the list.';
 
-        if (!isset($_POST['comments']))
+        if (empty($_POST['comments']))
             $errors[] = 'Please describe the issue in the comments field.';
 
         set_title('Error submitting concern');
