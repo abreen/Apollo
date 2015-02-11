@@ -58,7 +58,7 @@ if (!$grade_files) {
             $total += $earned;
 
             $str .= '<div class="right">';
-            $str .= '<pre>' . $contents . '</pre>';
+            $str .= html_pre($contents);
             $str .= '</div>';
         } else {
             $incomplete = TRUE;

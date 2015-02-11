@@ -8,6 +8,7 @@
 
 require 'lib/init.php';
 require 'lib/socrates.php';
+require 'lib/util.php';
 
 // redirects to log in page if necessary
 require 'auth.php';
@@ -33,7 +34,7 @@ if (!file_exists($path))
 $vars = array();
 
 $vars['filename'] = $_GET['file'];
-$vars['file'] = htmlspecialchars(file_get_contents($path));
+$vars['file'] = html_pre(file_get_contents($path));
 
 $vars['url'] = "upload.php?type=$type&num=$num";
 $vars['assignment'] = $assignment_name;
