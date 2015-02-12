@@ -57,24 +57,24 @@ function create_row($num, $type) {
 
     if ($status == CLOSED or $status == TOO_EARLY) {
         if (anything_submitted($num, $type, $_SESSION['username'])) {
-            $str .= '<li><a href="upload.php?type=' . $type .
+            $str .= '<li><a class="php" href="upload.php?type=' . $type .
                     '&num=' . $num .
                     '">View uploaded files</a></li>';
         }
     } else if ($status != CLOSED) {
         if (anything_submitted($num, $type, $_SESSION['username'])) {
-            $str .= '<li><a href="upload.php?type=' . $type .
+            $str .= '<li><a class="php" href="upload.php?type=' . $type .
                     '&num=' . $num .
                     '">Upload/view uploaded files</a></li>';
         } else {
-            $str .= '<li><a href="upload.php?type=' . $type .
+            $str .= '<li><a class="php" href="upload.php?type=' . $type .
                     '&num=' . $num .
                     '">Upload files</a></li>';
         }
     }
 
     if ($parts) {
-        $str .= '<li><a href="grade.php?type=' . $type .
+        $str .= '<li><a class="php" href="grade.php?type=' . $type .
                 '&num=' . $num .
                 '">View grade</a></li>';
     }

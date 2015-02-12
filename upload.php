@@ -171,11 +171,11 @@ foreach ($expected_files as $file => $dates) {
                 $ctime . '.<br>';
 
         $str .= '<ul>';
-        $str .= '<li><a href="download.php' . $url .
+        $str .= '<li><a class="php" href="download.php' . $url .
                 '">Download this file</a></li>';
 
         if (viewable_file_type($extension)) {
-            $str .= '<li><a href="view_file.php' . $url .
+            $str .= '<li><a class="php" href="view_file.php' . $url .
                     '">View this file</a></li>';
         }
 
