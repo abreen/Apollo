@@ -59,8 +59,8 @@ function html_admonition($body, $title = 'Note', $style = 'note') {
 
 function html_pre($s) {
     $pairs = array(
-        '	' => '<span class="tab"></span>&nbsp;&nbsp;&nbsp;&nbsp;',
         ' ' => '<span class="sp"></span> ',
+        '	' => '<span class="tab"></span>&nbsp;&nbsp;&nbsp;&nbsp;',
         "\r\n" => "\n",
         "\r" => "\n",
         "\n" => '<span class="nl"></span><br>',
