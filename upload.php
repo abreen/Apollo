@@ -65,7 +65,13 @@ if (isset($_POST['submitted'])) {
 
         if ($data['name'] != $filename) {
             $errors[$filename] = 'The file you tried to upload has the ' .
-                                 'wrong name. Please check the file name.';
+                                 'wrong name. You uploaded a file with ' .
+                                 'the name <tt>' .
+                                 $data['name'] .
+                                 '</tt>. Please check that you are ' .
+                                 'uploading the correct ' .
+                                 'file and that the file is in the expected ' .
+                                 'format.';
             continue;
         }
 
