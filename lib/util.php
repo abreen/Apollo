@@ -58,13 +58,16 @@ function html_admonition($body, $title = 'Note', $style = 'note') {
 }
 
 function html_pre($s) {
-    $replace_pairs = array(
+    $pairs = array(
         '	' => '<span class="tab"></span>&nbsp;&nbsp;&nbsp;&nbsp;',
         ' ' => '<span class="sp"></span> ',
+        "\r\n" => "\n",
+        "\r" => "\n",
         "\n" => '<span class="nl"></span><br>',
-        "\r" => ''
     );
 
-    return '<div class="pre">' . strtr(htmlspecialchars($s), $replace_pairs) .
+    return '<div class="pre">' .
+           str_replace(array_keys($pairs), array_values($pairs),
+                       htmlspecialchars($s, ENT_SUBSTITUTE | ENT_HTML5)) .
            '</div>';
 }
