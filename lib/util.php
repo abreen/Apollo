@@ -66,8 +66,15 @@ function html_pre($s) {
         "\n" => '<span class="nl"></span><br>',
     );
 
+    if (version_compare(phpversion(), '5.4.0', '<'))
+        // the old version of this function will leave in unknown chars
+        $specialchars = htmlspecialchars($s);
+    else
+        // for >= 5.4.0, to retain unknown chars, we must pass in a flag
+        $specialchars = htmlspecialchars($s, ENT_SUBSTITUTE | ENT_HTML5);
+
     return '<div class="pre">' .
            str_replace(array_keys($pairs), array_values($pairs),
-                       htmlspecialchars($s, ENT_SUBSTITUTE | ENT_HTML5)) .
+                       $specialchars) .
            '</div>';
 }
