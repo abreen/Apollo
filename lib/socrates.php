@@ -471,7 +471,8 @@ function due_dates($info) {
  * submission directory (the one under SUBMISSIONS_DIR). If the student's
  * submission directory does not exist, this function creates it. If the
  * subdirectory for the assignment also doesn't exist, this function will
- * create it. This function returns TRUE if the file was moved correctly.
+ * create it. This function returns TRUE if the file was moved correctly,
+ * or FALSE if anything goes wrong.
  */
 function save_file($num, $type, $username, $tmp_path, $dest_name) {
     check_assignment($num, $type);
@@ -488,13 +489,31 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
         $dest_path .= DIRECTORY_SEPARATOR . 'lab' . $num;
 
     if (!file_exists($dest_path))
-        // create new subdirectory for this assignment 
+        // create new subdirectory for this assignment
         apollo_new_directory($dest_path);
 
     $dest_path .= DIRECTORY_SEPARATOR . $dest_name;
 
     if (move_uploaded_file($tmp_path, $dest_path) === FALSE)
-        trigger_error("uploaded file could not be moved: $tmp_path");
+        return FALSE;
+
+    /*
+     * Because PHP was written by monkeys and no part of it may be trusted,
+     * we must make sure the file was actually saved. (For example, if there is
+     * no more space on the file system for the file, move_uploaded_file() will
+     * not return an error at all.)
+     */
+    if (!file_exists($dest_path))
+        // file could not be saved for some reason
+        return FALSE;
+
+    $size = filesize($dest_path);
+    if ($size === FALSE)
+        // file exists, but size cannot be obtained (permissions?)
+        return FALSE;
+    else if ($size === 0)
+        // no more space on the file system (?)
+        return FALSE;
 
     if (chmod($dest_path, NEW_FILE_MODE) === FALSE)
         trigger_error("error setting mode of uploaded file: $dest_path");
