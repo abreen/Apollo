@@ -7,7 +7,7 @@
  */
 
 require 'lib/init.php';
-require 'lib/socrates.php';
+require 'lib/meta.php';
 require 'lib/util.php';
 
 // redirects to log in page if necessary
@@ -89,13 +89,12 @@ if (isset($_POST['submitted'])) {
         }
 
         $successes[$filename] = 'File uploaded successfully.';
-        // TODO do post-upload tests
     }
 
-    $str = "";
+    $str = '';
 
     if (count($successes) == 0) {
-        $str = "None.";
+        $str = 'None.';
     } else {
         $str = '<ul>';
         foreach ($successes as $file => $result)
@@ -106,7 +105,7 @@ if (isset($_POST['submitted'])) {
     $vars['successes'] = $str;
 
     if (count($errors) == 0) {
-        $str = "None.";
+        $str = 'None.';
     } else {
         $str = '<ul>';
         foreach ($errors as $file => $result)
@@ -170,11 +169,12 @@ foreach ($expected_files as $file => $dates) {
 
     if (has_submitted($num, $type, $_SESSION['username'], $file)) {
         $url = '?type=' . $type . '&num=' . $num . '&file=' . $file;
-        $ctime = get_modification_time($num, $type,
-                                       $_SESSION['username'], $file);
+        $time = get_receipt_time($num, $type, $_SESSION['username'], $file);
 
-        $str .= '<tt>' . $file . '</tt> was uploaded on ' .
-                $ctime . '.<br>';
+        if ($time) {
+            $str .= '<tt>' . $file . '</tt> was uploaded on ' .
+                    $time->format(DATE_FORMAT_WITH_SECONDS) . '.<br>';
+        }
 
         $str .= '<ul>';
         $str .= '<li><a class="php" href="download.php' . $url .

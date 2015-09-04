@@ -7,7 +7,7 @@
  */
 
 require 'lib/init.php';
-require 'lib/socrates.php';
+require 'lib/meta.php';
 require 'lib/util.php';
 
 // redirects to log in page if necessary
@@ -39,8 +39,13 @@ $vars['file'] = html_pre(file_get_contents($path));
 $vars['url'] = "upload.php?type=$type&num=$num";
 $vars['assignment'] = $assignment_name;
 
-$ct = get_change_time($num, $type, $_SESSION['username'], $_GET['file']);
-$vars['ctime'] = $ct;
+$dt = get_receipt_time($num, $type, $_SESSION['username'], $_GET['file']);
+if ($dt) {
+    $vars['submitted'] = 'This file was submitted on ' .
+                         $dt->format(DATE_FORMAT_WITH_SECONDS) . '.';
+} else {
+    $vars['submitted'] = '';
+}
 
 set_title('Viewing ' . $_GET['file']);
 use_body_template('view_file');

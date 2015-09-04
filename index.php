@@ -7,7 +7,7 @@
  */
 
 require 'lib/init.php';
-require 'lib/socrates.php';
+require 'lib/meta.php';
 require 'lib/util.php';
 
 // redirects to log in page if necessary
@@ -23,7 +23,7 @@ function create_row($num, $type) {
 
     $info = get_files_and_dates($num, $type);
     if ($info === NULL)
-        // no criteria files for this assignment
+        // no metafile for this assignment
         return '';
 
     $str = '';
@@ -94,14 +94,14 @@ $vars['username'] = $_SESSION['username'];
 
 $str = '';
 
-// note: $ps_names comes from lib/socrates.php
+// note: $ps_names comes from lib/meta.php
 foreach ($ps_names as $num => $ps_name)
     $str .= create_row($num, PROBLEM_SET);
 
 $vars['psrows'] = $str;
 $str = '';
 
-// note: $lab_names comes from lib/socrates.php
+// note: $lab_names comes from lib/meta.php
 foreach ($lab_names as $num => $lab_name)
     $str .= create_row($num, LAB);
 

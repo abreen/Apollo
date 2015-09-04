@@ -7,7 +7,7 @@
  */
 
 require 'lib/init.php';
-require 'lib/socrates.php';
+require 'lib/meta.php';
 
 // redirects to log in page if necessary
 require 'auth.php';

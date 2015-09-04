@@ -1,13 +1,18 @@
 <?php // 5.3.3
 
 /*
- * socrates.php - PHP interface to socrates' criteria and grade files
+ * meta.php - tools for opening metafiles (see below)
  *
- * This file contains functions that allow a PHP script to load criteria
- * and grade files from a socrates installation. The criteria files are
- * read and parsed to produce information about assignments, their due dates,
- * and the files required. The grade files can be retrieved (the contents
- * of their TAR files read) to obtain information about students' grades.
+ * This file contains functions that allow a PHP script to load metafiles.
+ * In the context of Apollo, a metafile is a file containing information
+ * about other files, and Apollo metafiles contain the file names that
+ * Apollo expects to be uploaded, and the due dates for each of those files.
+ *
+ * An Apollo metafile is a YAML file whose "top-level" document is a map
+ * from file names to due date maps. A due date map is a mapping from a
+ * due date string in ISO 8601 format (with time zone offset) to a
+ * floating-point value between 0.0 and 1.0 (inclusive) indicating a late
+ * penalty.
  *
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
@@ -18,7 +23,8 @@ require_once 'spyc/Spyc.php';
 /*
  * Constants
  */
-define('DATE_FORMAT', 'F j, Y g:i A');
+
+define('ISO8601_TZ', 'Y-m-d\TH:i:sP');
 define('FRIENDLY_DATE_FORMAT', 'F j, Y \a\t g:i A');
 define('DATE_FORMAT_WITH_SECONDS', 'F j, Y \a\t g:i:s A');
 
@@ -31,8 +37,8 @@ define('CLOSED', 3);
 if (!is_readable(DROPBOX_DIR))
     trigger_error('failed to access dropbox: ' . DROPBOX_DIR);
 
-if (!is_readable(CRITERIA_DIR))
-    trigger_error('failed to access criteria directory: ' . CRITERIA_DIR);
+if (!is_readable(METAFILE_DIR))
+    trigger_error('failed to access metafile directory: ' . METAFILE_DIR);
 
 if (!is_readable(SUBMISSIONS_DIR))
     trigger_error('failed to access submissions directory: ' .
@@ -51,7 +57,7 @@ define('ALLOW_ALL_SUBMISSIONS', FALSE);
  * Used to determine whether a "view this file" link should be shown
  * on submissions.
  */
-$viewable_file_types = array('py', 'txt');
+$viewable_file_types = array('py', 'txt', 'java', 'c', 'cpp');
 
 /*
  * This is used by any code that needs the "current" time and is modifiable
@@ -156,10 +162,13 @@ function assignment_name($key, $type) {
 /*
  * Given a student's Kerberos username (e.g., "abreen") and an
  * assignment number (e.g., "3"), return an associative array
- * mapping groups (e.g., "a") to an array pair (a, b), where a is the
- * contents of the grade file for that group, and b is the total points
- * earned by the student. This function returns FALSE if the assignment
- * has not been graded at all.
+ * mapping group names to an array "triple" (a, b, c), where a is the
+ * contents of the grade file for that group, b is the points earned by
+ * the student, and c is the total number of possible points. The group
+ * name is the alphabetic portion of the grade file's name between the
+ * assignment name and the "-grade.txt" part. If the grade file has no
+ * such alphabetic portion, NULL is used for the group name. This function
+ * returns FALSE if the assignment has not been graded at all.
  */
 function get_grade_files($username, $num, $type) {
     check_assignment($num, $type);
@@ -176,9 +185,9 @@ function get_grade_files($username, $num, $type) {
     $grade_files = array();
 
     if ($type == PROBLEM_SET)
-        $pattern = '/ps' . $num. '([a-z])\-grade\.txt/';
+        $pattern = '/ps' . $num. '([a-zA-Z]+)?\-grade\.txt/';
     else
-        $pattern = '/lab' . $num . '([a-z])\-grade\.txt/';
+        $pattern = '/lab' . $num . '([a-zA-z]+)?\-grade\.txt/';
 
     $files = scandir($dir_path);
     foreach ($files as $filename) {
@@ -190,20 +199,28 @@ function get_grade_files($username, $num, $type) {
             // this grade file is not for this assignment
             continue;
 
-        $group = $matches[1];
+        if (count($matches) > 1) {
+            $group = $matches[1];
+        } else {
+            $group = NULL;
+        }
 
         $contents = file_get_contents($dir_path . DIRECTORY_SEPARATOR .
                                       $filename);
 
-        if (preg_match('/Total:\s*(\d+)/', $contents, $matches) !== 1)
+        if (preg_match('%[Tt]otal:\s*(\d+(?:\.\d+)?)/(\d+)(?:\.\d+)?%',
+                       $contents, $matches) !== 1)
+        {
             trigger_error("malformed grade file: $filename");
+        }
 
         $earned_points = $matches[1];
+        $total_points = $matches[2];
 
-        $grade_files[$group] = array($contents, $earned_points);
+        $grade_files[$group] = array($contents, $earned_points, $total_points);
     }
 
-    if (count($grade_files) == 0)
+    if (count($grade_files) === 0)
         return FALSE;
     else
         return $grade_files;
@@ -212,107 +229,64 @@ function get_grade_files($username, $num, $type) {
 /*
  * Given an assignment number (e.g., "10") and an assignment type
  * (e.g., LAB or PROBLEM_SET), return an associative array
- * mapping file names (e.g., "ps10pr2.py") to an associative array
- * containing mappings from DateTime objects to late deduction
- * multipliers. The DateTime objects are the due dates parsed from the
- * socrates criteria files (all groups). If there are no criteria files
- * for the assignment, this function returns NULL.
+ * mapping file names (e.g., "ps10pr2.py") to an array "pair"
+ * of DateTime objects and late deduction multipliers. The DateTime
+ * objects are the due dates parsed from a metafile. If there is no
+ * metafile for the assignment, this function returns NULL.
  */
 function get_files_and_dates($num, $type) {
     check_assignment($num, $type);
 
-    $groups = get_criteria_files($num, $type);
+    $meta = get_metafile($num, $type);
 
-    if ($groups === NULL)
+    if ($meta === NULL)
         return NULL;
 
     $info = array();
 
-    foreach ($groups as $parsed) {
+    foreach ($meta as $file => $due_dates) {
         $dates = array();
 
-        // parse the string dates into PHP date objects
-        foreach ($parsed['due'] as $multiplier => $date) {
-            $d = DateTime::createFromFormat(DATE_FORMAT, $date);
+        foreach ($due_dates as $date => $penalty) {
+            $d = DateTime::createFromFormat(ISO8601_TZ, $date);
 
             if ($d === FALSE)
                 trigger_error("could not parse date: $date");
 
-            $pair = array($d, $multiplier);
+            if ($penalty < 0 || $penalty > 1)
+                trigger_error("invalid late multiplier: $penalty");
+
+            $pair = array($d, $penalty);
 
             $dates[] = $pair;
         }
 
-        // for each file, associate its file name with the array of dates
-        foreach ($parsed['files'] as $file)
-            if (array_key_exists($file['path'], $info))
-                $info[$file['path']] =
-                    array_merge($info[$file['path']], $dates);
-            else
-                $info[$file['path']] = $dates;
+        $info[$file] = $dates;
     }
 
     return $info;
 }
 
 /*
- * Given an assignment number (e.g., "10"), return an array of parsed
- * YAML criteria files for that assignment, drawn from the directory
- * CRITERIA_DIR. If there are no criteria files for the specified
- * assignment, this function returns NULL.
+ * Given an assignment number (e.g., "10") and an assignment type
+ * (e.g., LAB or PROBLEM_SET), return an associative array representing
+ * the metafile for that assignment, drawn from the directory
+ * METAFILE_DIR. If there is no metafile for the specified assignment, this
+ * function returns NULL.
  */
-function get_criteria_files($num, $type) {
+function get_metafile($num, $type) {
     check_assignment($num, $type);
 
-    $crit_files_path = CRITERIA_DIR . DIRECTORY_SEPARATOR;
+    $path = METAFILE_DIR . DIRECTORY_SEPARATOR;
     if ($type == PROBLEM_SET)
-        $crit_files_path .= 'ps' . $num;
+        $path .= 'ps' . $num . '.yml';
     else
-        $crit_files_path .= 'lab' . $num;
+        $path .= 'lab' . $num . '.yml';
 
-    if (!is_dir($crit_files_path))
+    if (file_exists($path))
+        return Spyc::YAMLLoad($path);
+    else
         return NULL;
-
-    $groups = scandir($crit_files_path);
-
-    $files = array();
-    foreach ($groups as $yml_file) {
-        if ($yml_file == '.' || $yml_file == '..' || !is_yml_file($yml_file))
-            continue;
-
-        $path = $crit_files_path . DIRECTORY_SEPARATOR . $yml_file;
-        $files[] = Spyc::YAMLLoad($path);
-    }
-
-    return $files;
-}
-
-/*
- * Given an array of parsed YAML criteria files (e.g., one obtained by
- * calling get_criteria_files()), return an array of the grading groups
- * present in the criteria files for the assignment.
- */
-function get_groups($criteria_files) {
-    $groups = array();
-    foreach ($criteria_files as $file)
-        $groups[] = $file['group'];
-
-    return $groups;
-}
-
-/*
- * Given an array of parsed YAML criteria files (e.g., one obtained by
- * calling get_criteria_files()), return the total number of points the
- * assignment is worth. This is obtained by summing the point values for
- * all files across all grading groups.
- */
-function get_total_points($criteria_files) {
-    $sum = 0;
-    foreach ($criteria_files as $file)
-        foreach ($file['files'] as $required_file)
-            $sum += $required_file['point_value'];
-
-    return $sum;
 }
 
 /*
@@ -467,21 +441,17 @@ function due_dates($info) {
 /*
  * Given an assignment number (e.g., "6"), a student username, the
  * path to a temporary file holding a student's upload, and the desired
- * "destination" file name, move the temporary file into the student's
- * submission directory (the one under SUBMISSIONS_DIR). If the student's
- * submission directory does not exist, this function creates it. If the
- * subdirectory for the assignment also doesn't exist, this function will
- * create it. This function returns TRUE if the file was moved correctly,
- * or FALSE if anything goes wrong.
+ * "destination" file name, move the temporary file into SUBMISSIONS_DIR.
+ * The file will be placed in the student's subdirectory for the assignment.
+ * If the student's subdirectory does not exist, this function creates it.
+ * If the subdirectory for the assignment doesn't exist, this function
+ * will create it. This function returns TRUE if the file was moved
+ * correctly, or FALSE if anything goes wrong.
  */
 function save_file($num, $type, $username, $tmp_path, $dest_name) {
     check_assignment($num, $type);
 
-    $dest_path = SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $username;
-
-    if (!file_exists($dest_path))
-        // create new directory for this user
-        apollo_new_directory($dest_path);
+    $dest_path = SUBMISSIONS_DIR;
 
     if ($type == PROBLEM_SET)
         $dest_path .= DIRECTORY_SEPARATOR . 'ps' . $num;
@@ -489,7 +459,13 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
         $dest_path .= DIRECTORY_SEPARATOR . 'lab' . $num;
 
     if (!file_exists($dest_path))
-        // create new subdirectory for this assignment
+        // create new directory for this assignment
+        apollo_new_directory($dest_path);
+
+    $dest_path .= DIRECTORY_SEPARATOR . $username;
+
+    if (!file_exists($dest_path))
+        // create new subdirectory for this student
         apollo_new_directory($dest_path);
 
     $dest_path .= DIRECTORY_SEPARATOR . $dest_name;
@@ -499,9 +475,10 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
 
     /*
      * Because PHP was written by monkeys and no part of it may be trusted,
-     * we must make sure the file was actually saved. (For example, if there is
-     * no more space on the file system for the file, move_uploaded_file() will
-     * not return an error at all.)
+     * we must make sure the file was actually saved. (For example, if there
+     * is no more space on the file system for the file, move_uploaded_file()
+     * will not return an error at all. This interesting fact was discovered
+     * by painful experience.)
      */
     if (!file_exists($dest_path))
         // file could not be saved for some reason
@@ -511,12 +488,25 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
     if ($size === FALSE)
         // file exists, but size cannot be obtained (permissions?)
         return FALSE;
+
     else if ($size === 0)
         // no more space on the file system (?)
         return FALSE;
 
     if (chmod($dest_path, NEW_FILE_MODE) === FALSE)
         trigger_error("error setting mode of uploaded file: $dest_path");
+
+    /*
+     * Only if the move was successful, we attempt to save a receipt file
+     * with the current date and time.
+     */
+    $dt = new DateTime();
+    $now = $dt->format(ISO8601_TZ);
+    $receipt_path = $dest_path . '.receipt';
+    if (file_put_contents($receipt_path, $now, FILE_APPEND) !== FALSE) {
+        if (chmod($receipt_path, NEW_FILE_MODE) === FALSE)
+            trigger_error("error setting mode of receipt: $receipt_path");
+    }
 
     return TRUE;
 }
@@ -536,25 +526,25 @@ function files_with_due_date($info, $pair) {
  */
 
 // form a path to a file in a student submission directory
-function submission_path($ps, $type, $username, $file) {
-    return submission_dir_path($ps, $type, $username) .
+function submission_path($num, $type, $username, $file) {
+    return submission_dir_path($num, $type, $username) .
            DIRECTORY_SEPARATOR . $file;
 }
 
 // form a path to a student's submission directory
-function submission_dir_path($ps, $type, $username) {
-    return SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $username .
-           DIRECTORY_SEPARATOR . $type . $ps;
+function submission_dir_path($num, $type, $username) {
+    return SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $type . $num .
+           DIRECTORY_SEPARATOR . $username;
 }
 
 // return TRUE if a student has submitted a particular file
-function has_submitted($ps, $type, $username, $file) {
-    return is_file(submission_path($ps, $type, $username, $file));
+function has_submitted($num, $type, $username, $file) {
+    return is_file(submission_path($num, $type, $username, $file));
 }
 
 // return TRUE if a student has submitted anything for an assignment
-function anything_submitted($ps, $type, $username) {
-    $path = submission_dir_path($ps, $type, $username);
+function anything_submitted($num, $type, $username) {
+    $path = submission_dir_path($num, $type, $username);
 
     if (!is_dir($path))
         return FALSE;
@@ -562,16 +552,14 @@ function anything_submitted($ps, $type, $username) {
     return !is_dir_empty($path);
 }
 
-// return a date (in DATE_FORMAT_WITH_SECONDS) of a submitted file's ctime
-function get_change_time($ps, $type, $username, $file) {
-    return date(DATE_FORMAT_WITH_SECONDS,
-                filectime(submission_path($ps, $type, $username, $file)));
-}
-
-// return a date (in DATE_FORMAT_WITH_SECONDS) of a submitted file's mtime
-function get_modification_time($ps, $type, $username, $file) {
-    return date(DATE_FORMAT_WITH_SECONDS,
-                filemtime(submission_path($ps, $type, $username, $file)));
+// get a DateTime object for the submission time from a receipt, or NULL
+function get_receipt_time($num, $type, $username, $filename) {
+    $path = submission_path($num, $type, $username, $filename) . '.receipt';
+    $lines = file($path, FILE_IGNORE_NEW_LINES);
+    if ($lines === FALSE) return NULL;
+    $d = DateTime::createFromFormat(ISO8601_TZ, $lines[count($lines) - 1]);
+    if ($d === FALSE) return NULL;
+    return $d;
 }
 
 // unceremoniously delete a student's submission file

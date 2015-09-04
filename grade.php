@@ -7,7 +7,7 @@
  */
 
 require 'lib/init.php';
-require 'lib/socrates.php';
+require 'lib/meta.php';
 require 'lib/util.php';
 
 // redirects to log in page if necessary
@@ -34,36 +34,36 @@ $grade_files = get_grade_files($_SESSION['username'], $num, $type);
 $str = '';
 $incomplete = FALSE;
 
+$total = 0;
+$total_possible = 0;
+
 if (!$grade_files) {
     $str .= '<div class="row"><div class="left"></div><div class="right">';
     $str .= "No grade files found.";
     $str .= '</div></div>';
     $incomplete = TRUE;
 } else {
-    $crits = get_criteria_files($num, $type);
-    $groups = get_groups($crits);
-    $total_possible = get_total_points($crits);
-    $total = 0;
+    $i = 0;
+    foreach ($grade_files as $group => $triple) {
+        $i++;
+        $contents = $triple[0];
+        $earned_points = $triple[1];
+        $total_points = $triple[2];
 
-    foreach ($groups as $group) {
+        $total += $earned_points;
+        $total_possible += $total_points;
+
         $str .= '<div class="row">';
 
-        $str .= '<div class="left">Group ' . strtoupper($group) . '</div>';
-
-        if (array_key_exists($group, $grade_files)) {
-            $pair = $grade_files[$group];
-            $contents = $pair[0];
-            $earned = $pair[1];
-
-            $total += $earned;
-
-            $str .= '<div class="right">';
-            $str .= html_pre($contents);
-            $str .= '</div>';
+        if ($group) {
+            $str .= '<div class="left">Group ' . strtoupper($group) . '</div>';
         } else {
-            $incomplete = TRUE;
-            $str .= '<div class="right">No grade file yet</div>';
+            $str .= '<div class="left"></div>';
         }
+
+        $str .= '<div class="right">';
+        $str .= html_pre($contents);
+        $str .= '</div>';
 
         $str .= '</div>';           // end .row
     }

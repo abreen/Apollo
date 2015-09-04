@@ -33,10 +33,10 @@ define('NEW_DIR_MODE', intval($vars['new_dir_mode'], 0));
 define('ACCOUNTS_DIR', $vars['accounts_dir']);
 define('CONCERNS_DIR', $vars['concerns_dir']);
 define('DROPBOX_DIR', $vars['dropbox_dir']);
-define('CRITERIA_DIR', $vars['criteria_dir']);
 define('SUBMISSIONS_DIR', $vars['submissions_dir']);
 define('PRESTO_TEMPLATE', $vars['presto_template']);
 define('TEMPLATES_DIR', $vars['templates_dir']);
+define('METAFILE_DIR', $vars['metafile_dir']);
 
 // perform intialization
 date_default_timezone_set(TIMEZONE);
