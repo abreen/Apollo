@@ -1,6 +1,6 @@
 <?php // 5.3.3
 
-define('APOLLO_VERSION', '1.8');
+define('APOLLO_VERSION', '2.0');
 
 // path to the Apollo installation
 // note: this will work as long as this file (init.php) is in the lib directory
