@@ -68,10 +68,19 @@ if (isset($_POST['submitted'])) {
                                  'wrong name. You uploaded a file with ' .
                                  'the name <tt>' .
                                  $data['name'] .
-                                 '</tt>. Please check that you are ' .
-                                 'uploading the correct ' .
-                                 'file and that the file is in the expected ' .
-                                 'format.';
+                                 '</tt> in the upload area for <tt>' .
+                                 $filename . '</tt>. Please check that ' .
+                                 'you are uploading the correct ' .
+                                 'file.';
+
+            $extension = file_extension($filename);
+
+            if ($extension == 'java') {
+                $errors[$filename] .= ' If you need to rename your Java ' .
+                                      'file, <strong>make sure you change ' .
+                                      'the class name to match</strong>.';
+            }
+
             continue;
         }
 
