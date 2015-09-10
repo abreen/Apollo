@@ -503,6 +503,11 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
     $dt = new DateTime();
     $now = $dt->format(ISO8601_TZ);
     $receipt_path = $dest_path . '.receipt';
+
+    if (is_file($receipt_path)) {
+        file_put_contents($receipt_path, "\n", FILE_APPEND);
+    }
+
     if (file_put_contents($receipt_path, $now, FILE_APPEND) !== FALSE) {
         if (chmod($receipt_path, NEW_FILE_MODE) === FALSE)
             trigger_error("error setting mode of receipt: $receipt_path");
