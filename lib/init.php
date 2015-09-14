@@ -37,6 +37,7 @@ define('SUBMISSIONS_DIR', $vars['submissions_dir']);
 define('PRESTO_TEMPLATE', $vars['presto_template']);
 define('TEMPLATES_DIR', $vars['templates_dir']);
 define('METAFILE_DIR', $vars['metafile_dir']);
+define('LOGS_DIR', $vars['logs_dir']);
 
 // perform intialization
 date_default_timezone_set(TIMEZONE);

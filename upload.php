@@ -8,6 +8,7 @@
 
 require 'lib/init.php';
 require 'lib/meta.php';
+require 'lib/log.php';
 require 'lib/util.php';
 
 // redirects to log in page if necessary
@@ -99,6 +100,9 @@ if (isset($_POST['submitted'])) {
 
         $successes[$filename] = 'File uploaded successfully.';
     }
+
+    log_submission($num, $type, $_SESSION['username'], array_keys($successes),
+                   $_SERVER['REMOTE_ADDR']);
 
     $str = '';
 
