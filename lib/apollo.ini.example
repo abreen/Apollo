@@ -52,19 +52,21 @@ accounts_dir = ""
 concerns_dir = ""
 
 ; directory where grade files are read
-; (this directory should be part of a socrates installation)
+; (this directory could be part of a Socrates installation)
 dropbox_dir = ""
-
-; the directory from which criteria YAML files are read
-; (this directory should be part of a socrates installation)
-criteria_dir = ""
 
 ; the directory to which uploads are saved
 submissions_dir = ""
 
 ; path to a presto template (HTML with variables)
-; (this directory should be part of a presto installation)
+; (this directory could be part of a presto installation)
 presto_template = ""
 
-; path to template directory (for use with Apollo)
+; path to template directory (the Apollo templates)
 templates_dir = ""
+
+; the directory from which metafiles files are read
+metafile_dir = ""
+
+; the directory to which logs are written when submissions are made
+logs_dir = ""
