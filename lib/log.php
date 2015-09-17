@@ -39,9 +39,14 @@ function log_submission($num, $type, $username, $filenames, $ip) {
 
     //$yaml = Spyc::YAMLDump(array($arr), false, false, true);
 
-    $str = "- files:\n";
-    foreach ($filenames as $filename)
-        $str .= "    - $filename\n";
+    $str = "- files:";
+    if (count($filenames) == 0) {
+        $str .= " []\n";
+    } else {
+        $str .= "\n";
+        foreach ($filenames as $filename)
+            $str .= "    - $filename\n";
+    }
 
     $str .= "  date: $date\n";
     $str .= "  ip: $ip\n";
