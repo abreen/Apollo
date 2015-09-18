@@ -6,6 +6,8 @@ define('APOLLO_VERSION', '2.1');
 // note: this will work as long as this file (init.php) is in the lib directory
 define('APOLLO_LIB_PATH', dirname(__FILE__));
 
+define('ERROR_LOG_PATH', APOLLO_LIB_PATH . DIRECTORY_SEPARATOR . 'errors.log');
+
 // note: this will work as long as the INI file is in the lib directory
 define('APOLLO_INI', APOLLO_LIB_PATH . DIRECTORY_SEPARATOR . 'apollo.ini');
 
@@ -56,6 +58,9 @@ require_once 'template.php';
  * number is printed.
  */
 function http_error($num, $str, $file, $line) {
+    $err = date(DATE_RFC2822) . ": error #$num: $str: $file: $line\n";
+    file_put_contents(ERROR_LOG_PATH, $err, FILE_APPEND);
+
     use_body_template('500');
     header('X-PHP-Response-Code: 500', true, 500);
 
@@ -64,8 +69,7 @@ function http_error($num, $str, $file, $line) {
 
     if (DEBUG_MODE) {
         $script = end(explode(DIRECTORY_SEPARATOR, $file));
-        $str = "In " . $script . " on line " . $line . ":\n" . $str;
-
+        $str = "In $script on line $line:\n" . $str;
         $vars['errorstr'] = $str;
     } else {
         $vars['errorstr'] = "Error $num";
