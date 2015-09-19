@@ -247,4 +247,6 @@ foreach ($expected_files as $file => $dates) {
 
 $vars['rows'] = $str;
 
+$vars['formtag'] = '<form enctype="multipart/form-data" method="post" class="upload" '  .
+                   'action="upload.php?' . http_build_query($_GET) . '">';
 render_page($vars);
