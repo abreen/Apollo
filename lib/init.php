@@ -58,7 +58,10 @@ require_once 'template.php';
  * number is printed.
  */
 function http_error($num, $str, $file, $line) {
-    $err = date(DATE_RFC2822) . ": error #$num: $str: $file: $line\n";
+    $err = date(DATE_RFC2822) . ": error #$num: $str: $file: $line";
+    if (isset($_SESSION['username']))
+        $err .= " (username: " . $_SESSION['username'] . ")";
+    $err .= "\n";
     file_put_contents(ERROR_LOG_PATH, $err, FILE_APPEND);
 
     use_body_template('500');
