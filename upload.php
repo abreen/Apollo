@@ -25,6 +25,9 @@ $assignment_name = htmlspecialchars(assignment_name($num, $type));
 
 $expected_files = get_files_and_dates($num, $type);
 
+if (!$expected_files)
+    trigger_error('invalid assignment number: ' . $num);
+
 $vars = array();
 $vars['username'] = $_SESSION['username'];
 $vars['assignment'] = $assignment_name;
