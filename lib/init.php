@@ -58,10 +58,12 @@ require_once 'template.php';
  * number is printed.
  */
 function http_error($num, $str, $file, $line) {
-    $err = date(DATE_RFC2822) . ": error #$num: $str: $file: $line";
+    $err = date(DATE_RFC2822) . ": error #$num: $str: $file: line $line\n";
     if (isset($_SESSION['username']))
-        $err .= " (username: " . $_SESSION['username'] . ")";
-    $err .= "\n";
+        $err .= "\tusername=" . $_SESSION['username'] . "\n";
+    $err .= "\tget=" . json_encode($_GET) . "\n";
+    $err .= "\tpost=" . json_encode($_POST) . "\n";
+
     file_put_contents(ERROR_LOG_PATH, $err, FILE_APPEND);
 
     use_body_template('500');
