@@ -14,8 +14,10 @@ require 'lib/util.php';
 // redirects to log in page if necessary
 require 'auth.php';
 
-if (!isset($_GET['type']) || !isset($_GET['num']))
-    trigger_error('invalid or not enough parameters');
+if (!isset($_GET['type']) || !isset($_GET['num'])) {
+    header('Location: index.php');
+    exit;
+}
 
 check_assignment($_GET['num'], $_GET['type']);
 
