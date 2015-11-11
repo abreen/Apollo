@@ -35,6 +35,11 @@ function is_dotfile($filename) {
     return strpos($filename, '.') === 0;
 }
 
+// e.g., for Emacs backup files
+function is_backup($filename) {
+    return strpos(strrev($filename), '~') === 0;
+}
+
 function html_ul($arr) {
     $s = '<ul>';
 

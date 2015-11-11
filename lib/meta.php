@@ -12,7 +12,7 @@
  * from file names to due date maps. A due date map is a mapping from a
  * due date string in ISO 8601 format (with time zone offset) to a
  * floating-point value between 0.0 and 1.0 (inclusive) indicating a late
- * penalty.
+ * penalty percentage.
  *
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
@@ -191,8 +191,11 @@ function get_grade_files($username, $num, $type) {
 
     $files = scandir($dir_path);
     foreach ($files as $filename) {
-        if ($filename == '.' || $filename == '..' || is_dotfile($filename))
+        if ($filename == '.' || $filename == '..' ||
+            is_dotfile($filename) || is_backup($filename))
+        {
             continue;
+        }
 
         $matches = array();
         if (preg_match($pattern, $filename, $matches) !== 1)
