@@ -3,7 +3,7 @@ Apollo
 
 Apollo is a collection of PHP scripts written to provide a web-based interface
 for students to upload coursework. It was originally written to be used with a
-single Socrates[soc] installation on a multi-user system, but has been since
+single [Socrates][soc] installation on a multi-user system, but has been since
 decoupled from Socrates.
 
 Apollo reads, parses and uses *metafiles* to determine the expected files for a
