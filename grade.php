@@ -32,7 +32,7 @@ $vars['assignment'] = $assignment_name;
 $grade_files = get_grade_files($_SESSION['username'], $num, $type);
 
 $str = '';
-$incomplete = FALSE;
+$incomplete = false;
 
 $total = 0;
 $total_possible = 0;
@@ -41,7 +41,7 @@ if (!$grade_files) {
     $str .= '<div class="row"><div class="left"></div><div class="right">';
     $str .= "No grade files found.";
     $str .= '</div></div>';
-    $incomplete = TRUE;
+    $incomplete = true;
 } else {
     $i = 0;
     foreach ($grade_files as $group => $triple) {

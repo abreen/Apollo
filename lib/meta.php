@@ -36,11 +36,11 @@ define('ACCEPTING_LATE', 2);
 define('CLOSED', 3);
 
 /*
- * If this is set to TRUE, submissions for all assignments are allowed,
+ * If this is set to true, submissions for all assignments are allowed,
  * even past deadlines. This essentially turns off the deadline-related
  * computation and turns this application into WebSubmit.
  */
-define('ALLOW_ALL_SUBMISSIONS', FALSE);
+define('ALLOW_ALL_SUBMISSIONS', false);
 
 
 /*
@@ -157,8 +157,8 @@ function assignment_name($key, $type) {
  * the student, and c is the total number of possible points. The group
  * name is the alphabetic portion of the grade file's name between the
  * assignment name and the "-grade.txt" part. If the grade file has no
- * such alphabetic portion, NULL is used for the group name. This function
- * returns FALSE if the assignment has not been graded at all.
+ * such alphabetic portion, null is used for the group name. This function
+ * returns false if the assignment has not been graded at all.
  */
 function get_grade_files($username, $num, $type) {
     check_assignment($num, $type);
@@ -167,7 +167,7 @@ function get_grade_files($username, $num, $type) {
 
     if (!is_dir($dir_path))
         // if this directory doesn't exist, no grades are present
-        return FALSE;
+        return false;
 
     if (!is_readable($dir_path))
         trigger_error("grade directory not readable: $dir_path");
@@ -195,7 +195,7 @@ function get_grade_files($username, $num, $type) {
         if (count($matches) > 1) {
             $group = $matches[1];
         } else {
-            $group = NULL;
+            $group = null;
         }
 
         $contents = file_get_contents($dir_path . SEP . $filename);
@@ -213,7 +213,7 @@ function get_grade_files($username, $num, $type) {
     }
 
     if (count($grade_files) === 0)
-        return FALSE;
+        return false;
     else
         return $grade_files;
 }
@@ -224,15 +224,15 @@ function get_grade_files($username, $num, $type) {
  * mapping file names (e.g., "ps10pr2.py") to an array "pair"
  * of DateTime objects and late deduction multipliers. The DateTime
  * objects are the due dates parsed from a metafile. If there is no
- * metafile for the assignment, this function returns NULL.
+ * metafile for the assignment, this function returns null.
  */
 function get_files_and_dates($num, $type) {
     check_assignment($num, $type);
 
     $meta = get_metafile($num, $type);
 
-    if ($meta === NULL)
-        return NULL;
+    if ($meta === null)
+        return null;
 
     $info = array();
 
@@ -242,7 +242,7 @@ function get_files_and_dates($num, $type) {
         foreach ($due_dates as $date => $penalty) {
             $d = DateTime::createFromFormat(ISO8601_TZ, $date);
 
-            if ($d === FALSE)
+            if ($d === false)
                 trigger_error("could not parse date: $date");
 
             if ($penalty < 0 || $penalty > 1)
@@ -264,7 +264,7 @@ function get_files_and_dates($num, $type) {
  * (e.g., LAB or PROBLEM_SET), return an associative array representing
  * the metafile for that assignment, drawn from the directory
  * METAFILE_DIR. If there is no metafile for the specified assignment, this
- * function returns NULL.
+ * function returns null.
  */
 function get_metafile($num, $type) {
     check_assignment($num, $type);
@@ -278,7 +278,7 @@ function get_metafile($num, $type) {
     if (file_exists($path))
         return Spyc::YAMLLoad($path);
     else
-        return NULL;
+        return null;
 }
 
 /*
@@ -437,8 +437,9 @@ function due_dates($info) {
  * The file will be placed in the student's subdirectory for the assignment.
  * If the student's subdirectory does not exist, this function creates it.
  * If the subdirectory for the assignment doesn't exist, this function
- * will create it. This function returns TRUE if the file was moved
- * correctly, or FALSE if anything goes wrong.
+ * will create it. This function returns a string containing the path to
+ * the new file if the file was saved correctly, or false if anything goes
+ * wrong.
  */
 function save_file($num, $type, $username, $tmp_path, $dest_name) {
     check_assignment($num, $type);
@@ -462,8 +463,8 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
 
     $dest_path .= SEP . $dest_name;
 
-    if (move_uploaded_file($tmp_path, $dest_path) === FALSE)
-        return FALSE;
+    if (move_uploaded_file($tmp_path, $dest_path) === false)
+        return false;
 
     /*
      * Because PHP was written by monkeys and no part of it may be trusted,
@@ -474,18 +475,18 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
      */
     if (!file_exists($dest_path))
         // file could not be saved for some reason
-        return FALSE;
+        return false;
 
     $size = filesize($dest_path);
-    if ($size === FALSE)
+    if ($size === false)
         // file exists, but size cannot be obtained (permissions?)
-        return FALSE;
+        return false;
 
     else if ($size === 0)
         // no more space on the file system (?)
-        return FALSE;
+        return false;
 
-    if (chmod($dest_path, NEW_FILE_MODE_INT) === FALSE)
+    if (chmod($dest_path, NEW_FILE_MODE_INT) === false)
         trigger_error("error setting mode of uploaded file: $dest_path");
 
     /*
@@ -500,12 +501,12 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
         file_put_contents($receipt_path, "\n", FILE_APPEND);
     }
 
-    if (file_put_contents($receipt_path, $now, FILE_APPEND) !== FALSE) {
-        if (chmod($receipt_path, NEW_FILE_MODE_INT) === FALSE)
+    if (file_put_contents($receipt_path, $now, FILE_APPEND) !== false) {
+        if (chmod($receipt_path, NEW_FILE_MODE_INT) === false)
             trigger_error("error setting mode of receipt: $receipt_path");
     }
 
-    return TRUE;
+    return $dest_path;
 }
 
 function files_with_due_date($info, $pair) {
@@ -532,28 +533,28 @@ function submission_dir_path($num, $type, $username) {
     return SUBMISSIONS_DIR . SEP . $type . $num . SEP . $username;
 }
 
-// return TRUE if a student has submitted a particular file
+// return true if a student has submitted a particular file
 function has_submitted($num, $type, $username, $file) {
     return is_file(submission_path($num, $type, $username, $file));
 }
 
-// return TRUE if a student has submitted anything for an assignment
+// return true if a student has submitted anything for an assignment
 function anything_submitted($num, $type, $username) {
     $path = submission_dir_path($num, $type, $username);
 
     if (!is_dir($path))
-        return FALSE;
+        return false;
 
     return !is_dir_empty($path);
 }
 
-// get a DateTime object for the submission time from a receipt, or NULL
+// get a DateTime object for the submission time from a receipt, or null
 function get_receipt_time($num, $type, $username, $filename) {
     $path = submission_path($num, $type, $username, $filename) . '.receipt';
     $lines = file($path, FILE_IGNORE_NEW_LINES);
-    if ($lines === FALSE) return NULL;
+    if ($lines === false) return null;
     $d = DateTime::createFromFormat(ISO8601_TZ, $lines[count($lines) - 1]);
-    if ($d === FALSE) return NULL;
+    if ($d === false) return null;
     return $d;
 }
 
@@ -562,17 +563,17 @@ function delete_file($ps, $type, $username, $file) {
     return unlink(submission_path($ps, $type, $username, $file));
 }
 
-// given a path, return TRUE if the file ends in '.yml'
+// given a path, return true if the file ends in '.yml'
 function is_yml_file($string) {
     return stripos(strrev($string), 'lmy.') === 0;
 }
 
 function any_value($array, $key) {
     if (!$array)
-        return NULL;
+        return null;
 
     if (!is_array($array))
-        return NULL;
+        return null;
 
     if (array_key_exists($key, $array))
         return $array[$key];
@@ -582,7 +583,7 @@ function any_value($array, $key) {
             return any_value($v, $key);
 }
 
-// given a path to a directory, return TRUE if it is empty
+// given a path to a directory, return true if it is empty
 function is_dir_empty($path) {
     if (!is_readable($path))
         trigger_error("path is not readable: $path");
@@ -590,9 +591,9 @@ function is_dir_empty($path) {
     $d = opendir($path);
     while ($entry = readdir($d))
         if ($entry != '.' && $entry != '..')
-            return FALSE;
+            return false;
 
-    return TRUE;
+    return true;
 }
 
 function viewable_file_type($extension) {

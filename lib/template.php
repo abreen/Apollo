@@ -97,7 +97,7 @@ function render_page($vars = null) {
 
     foreach ($page_content as $key => $val) {
         $i = array_search('$' . $key, $vars_in_template);
-        if ($i === FALSE) {
+        if ($i === false) {
             // this variable is not in the template
             continue;
         }

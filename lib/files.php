@@ -14,7 +14,7 @@ function apollo_new_file($path, $contents) {
     if (file_exists($path))
         trigger_error("file already exists: $path");
 
-    if (file_put_contents($path, $contents) === FALSE)
+    if (file_put_contents($path, $contents) === false)
         trigger_error("failure writing file: $path");
 
     chmod($path, NEW_FILE_MODE_INT);
@@ -24,7 +24,7 @@ function apollo_new_directory($path) {
     if (file_exists($path))
         trigger_error("directory already exists: $path");
 
-    if (mkdir($path) === FALSE)
+    if (mkdir($path) === false)
         trigger_error("failure making directory: $path");
 
     chmod($path, NEW_DIR_MODE_INT);

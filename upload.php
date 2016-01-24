@@ -35,7 +35,8 @@ $vars['username'] = $_SESSION['username'];
 $vars['assignment'] = $assignment_name;
 
 if (isset($_POST['submitted'])) {
-    $errors = array();
+    $failures = array();
+    $warnings = array();
     $successes = array();
 
     $valid_file_names = array_keys($expected_files);
@@ -47,6 +48,7 @@ if (isset($_POST['submitted'])) {
     foreach ($_FILES as $fieldname => $data) {
         $filename = $html_names_map[$fieldname];
         $status = upload_status($expected_files[$filename]);
+        $extension = file_extension($filename);
 
         if ($data['error'] == UPLOAD_ERR_NO_FILE)
             continue;
@@ -55,61 +57,116 @@ if (isset($_POST['submitted'])) {
             if ($data['error'] == UPLOAD_ERR_INI_SIZE ||
                 $data['error'] == UPLOAD_ERR_FORM_SIZE)
             {
-                $errors[$filename] = 'The file you tried to upload is ' .
-                                     'too large.';
+                $failures[$filename] = 'The file you tried to upload is ' .
+                                       'too large.';
             } else {
-                $errors[$filename] = 'An error occurred uploading this file.';
+                $failures[$filename] = 'An error occurred uploading this file.';
             }
 
             continue;
         }
 
         if ($data['size'] == 0) {
-            $errors[$filename] = 'The file you tried to upload is empty.';
+            $failures[$filename] = 'The file you tried to upload is empty.';
             continue;
         }
 
         if ($data['name'] != $filename) {
-            $errors[$filename] = 'The file you tried to upload has the ' .
-                                 'wrong name. You uploaded a file with ' .
-                                 'the name <tt>' .
-                                 $data['name'] .
-                                 '</tt> in the upload area for <tt>' .
-                                 $filename . '</tt>. Please check that ' .
-                                 'you are uploading the correct ' .
-                                 'file.';
-
-            $extension = file_extension($filename);
+            $failures[$filename] = 'The file you tried to upload has the ' .
+                                   'wrong name. You uploaded a file with ' .
+                                   'the name ' . html_tt($data['name']) . ' ' .
+                                   'in the upload area for ' .
+                                   html_tt($filename) . '. Please check that ' .
+                                   'you are uploading the correct ' .
+                                   'file.';
 
             if ($extension == 'java') {
-                $errors[$filename] .= ' If you need to rename your Java ' .
-                                      'file, <strong>make sure you change ' .
-                                      'the class name to match</strong>.';
+                $failures[$filename] .= ' If you need to rename your Java ' .
+                                        'file, <strong>make sure you change ' .
+                                        'the class name to match</strong>.';
             }
 
             continue;
         }
 
         if ($status != ACCEPTING && $status != ACCEPTING_LATE) {
-            $errors[$filename] = 'This file is not being accepted yet or ' .
-                                 'its deadline has already passed.';
+            $failures[$filename] = 'This file is not being accepted yet or ' .
+                                   'its deadline has already passed.';
             continue;
         }
 
-        if (!save_file($num, $type, $_SESSION['username'],
-                       $data['tmp_name'], $filename))
-        {
-            $errors[$filename] = 'An error occurred saving this file.';
+        $dest_path = save_file(
+            $num, $type, $_SESSION['username'], $data['tmp_name'], $filename
+        );
+
+        if ($dest_path === false) {
+            $failures[$filename] = 'An error occurred saving this file.';
             continue;
         }
 
-        $successes[$filename] = 'File uploaded successfully.';
+        if ($extension == 'py') {
+            // check Python syntax with the helper check.py script
+            $output = array();
+            $status = -1;
+
+            exec("python lib/check.py $dest_path", $output, $status);
+
+            if ($status === -1) {
+                // something went wrong with the helper script; do nothing
+                $successes[$filename] = 'File uploaded successfully.';
+            } elseif ($status != 0) {
+                $error_type = $output[0];
+                $error_line = $output[1];
+                $error_msg = $output[2];
+                $error_code = $output[3];
+
+                if (in_array($error_type[0], array('a', 'e', 'i', 'o', 'u')))
+                    $kind = 'an ' . $error_type;
+                else
+                    $kind = 'a ' . $error_type;
+
+                $warnings[$filename] = "Your file was uploaded, but $kind " .
+                    "was found near line $error_line: <pre>" .
+                    htmlspecialchars($error_code) . '</pre>' .
+                    'The Python interpreter reported ' .
+                    html_tt(htmlspecialchars($error_msg)) . '. ' .
+                    '<strong>Please review this code and re-upload it, if ' .
+                    'necessary.</strong>';
+
+            } else {
+                $successes[$filename] = 'File uploaded successfully.';
+            }
+        } else {
+            $successes[$filename] = 'File uploaded successfully.';
+        }
     }
 
     log_submission($num, $type, $_SESSION['username'], array_keys($successes),
                    $_SERVER['REMOTE_ADDR']);
 
     $str = '';
+
+    if (count($failures) == 0) {
+        $str = 'None.';
+    } else {
+        $str = '<ul>';
+        foreach ($failures as $file => $result)
+            $str .= '<li><tt>' . $file . '</tt><br>' . $result . '</li>';
+        $str .= '</ul>';
+    }
+
+    $vars['failures'] = $str;
+
+    if (count($warnings) == 0) {
+        $str = 'None.';
+    } else {
+        $str = '<ul>';
+        foreach ($warnings as $file => $result)
+            $str .= '<li><tt>' . $file . '</tt><br>' . $result . '</li>';
+        $str .= '</ul>';
+    }
+
+    $vars['warnings'] = $str;
 
     if (count($successes) == 0) {
         $str = 'None.';
@@ -122,32 +179,13 @@ if (isset($_POST['submitted'])) {
 
     $vars['successes'] = $str;
 
-    if (count($errors) == 0) {
-        $str = 'None.';
-    } else {
-        $str = '<ul>';
-        foreach ($errors as $file => $result)
-            $str .= '<li><tt>' . $file . '</tt><br>' . $result . '</li>';
-        $str .= '</ul>';
-    }
-
-    $vars['failures'] = $str;
-
-    $c = count($successes);
+    $c = count($successes) + count($warnings);
     if ($c == 1)
-        $vars['summary'] = 'One file was uploaded successfully.';
+        $str = 'One file was uploaded successfully.';
     else
-        $vars['summary'] = $c . ' files were uploaded successfully.';
+        $str = $c . ' files were uploaded successfully.';
 
-    if (count($errors) == 1) {
-        $vars['message'] = html_admonition('There was a problem with your ' .
-                                           'upload.', 'Error', 'error');
-    } else if (count($errors) > 1) {
-        $vars['message'] = html_admonition('There were problems with your ' .
-                                           'upload.', 'Error', 'error');
-    } else {
-        $vars['message'] = '';
-    }
+    $vars['summary'] = $str;
 
     $vars['url'] = "upload.php?type=$type&num=$num";
 

@@ -22,7 +22,7 @@ function create_row($num, $type) {
     global $status_map;
 
     $info = get_files_and_dates($num, $type);
-    if ($info === NULL)
+    if ($info === null)
         // no metafile for this assignment
         return '';
 
