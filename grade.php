@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * grade.php - provides a detailed listing of grade files for an assignment

@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * template.php - functions for loading and interpreting presto templates
@@ -14,6 +14,8 @@
  *
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
+
+require_once 'globals.php';
 
 define('MASTHEAD', '<div class="apollo-logo">Apollo</div><br>');
 
@@ -58,7 +60,7 @@ function set_title($string) {
 function use_body_template($name) {
     global $body_template;
 
-    $path = TEMPLATES_DIR . DIRECTORY_SEPARATOR . $name . '.html';
+    $path = TEMPLATES_DIR . SEP . $name . '.html';
 
     if (!is_readable($path))
         trigger_error('failed to load body template ' . $name);

@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * about.php - about page for Apollo system

@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * log.php - tools for generating log files
@@ -19,15 +19,9 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
+require_once 'globals.php';
 require_once 'meta.php';
 require_once 'spyc/Spyc.php';
-
-/*
- * Constants
- */
-
-if (!is_readable(LOGS_DIR))
-    trigger_error('failed to access logs directory: ' . LOGS_DIR);
 
 /*
  * Functions
@@ -67,11 +61,10 @@ function log_submission($num, $type, $username, $filenames, $ip) {
 
 // form a path to a log file
 function log_file_path($num, $type, $username) {
-    return log_dir_path($username) . DIRECTORY_SEPARATOR .
-           $type . $num . '.yml';
+    return log_dir_path($username) . SEP . $type . $num . '.yml';
 }
 
 // form a path to a student's log directory for an assignment
 function log_dir_path($username) {
-    return LOGS_DIR . DIRECTORY_SEPARATOR . $username;
+    return LOGS_DIR . SEP . $username;
 }

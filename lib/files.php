@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * files.php - special Apollo wrapper functions around file operations
@@ -17,7 +17,7 @@ function apollo_new_file($path, $contents) {
     if (file_put_contents($path, $contents) === FALSE)
         trigger_error("failure writing file: $path");
 
-    chmod($path, NEW_FILE_MODE);
+    chmod($path, NEW_FILE_MODE_INT);
 }
 
 function apollo_new_directory($path) {
@@ -27,5 +27,5 @@ function apollo_new_directory($path) {
     if (mkdir($path) === FALSE)
         trigger_error("failure making directory: $path");
 
-    chmod($path, NEW_DIR_MODE);
+    chmod($path, NEW_DIR_MODE_INT);
 }

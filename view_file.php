@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * view_file.php - displays the contents of a submitted file

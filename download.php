@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * download.php - downloads an uploaded file in a user's subdirectory

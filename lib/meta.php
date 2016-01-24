@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * meta.php - tools for opening metafiles (see below)
@@ -17,6 +17,7 @@
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
+require_once 'globals.php';
 require_once 'files.php';
 require_once 'spyc/Spyc.php';
 
@@ -33,17 +34,6 @@ define('TOO_EARLY', 0);
 define('ACCEPTING', 1);
 define('ACCEPTING_LATE', 2);
 define('CLOSED', 3);
-
-if (!is_readable(DROPBOX_DIR))
-    trigger_error('failed to access dropbox: ' . DROPBOX_DIR);
-
-if (!is_readable(METAFILE_DIR))
-    trigger_error('failed to access metafile directory: ' . METAFILE_DIR);
-
-if (!is_readable(SUBMISSIONS_DIR))
-    trigger_error('failed to access submissions directory: ' .
-                  SUBMISSIONS_DIR);
-
 
 /*
  * If this is set to TRUE, submissions for all assignments are allowed,
@@ -173,7 +163,7 @@ function assignment_name($key, $type) {
 function get_grade_files($username, $num, $type) {
     check_assignment($num, $type);
 
-    $dir_path = DROPBOX_DIR . DIRECTORY_SEPARATOR . $username;
+    $dir_path = DROPBOX_DIR . SEP . $username;
 
     if (!is_dir($dir_path))
         // if this directory doesn't exist, no grades are present
@@ -208,8 +198,7 @@ function get_grade_files($username, $num, $type) {
             $group = NULL;
         }
 
-        $contents = file_get_contents($dir_path . DIRECTORY_SEPARATOR .
-                                      $filename);
+        $contents = file_get_contents($dir_path . SEP . $filename);
 
         if (preg_match('%[Tt]otal:\s*(\d+(?:\.\d+)?)/(\d+)(?:\.\d+)?%',
                        $contents, $matches) !== 1)
@@ -280,7 +269,7 @@ function get_files_and_dates($num, $type) {
 function get_metafile($num, $type) {
     check_assignment($num, $type);
 
-    $path = METAFILE_DIR . DIRECTORY_SEPARATOR;
+    $path = METAFILE_DIR . SEP;
     if ($type == PROBLEM_SET)
         $path .= 'ps' . $num . '.yml';
     else
@@ -457,21 +446,21 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
     $dest_path = SUBMISSIONS_DIR;
 
     if ($type == PROBLEM_SET)
-        $dest_path .= DIRECTORY_SEPARATOR . 'ps' . $num;
+        $dest_path .= SEP . 'ps' . $num;
     else
-        $dest_path .= DIRECTORY_SEPARATOR . 'lab' . $num;
+        $dest_path .= SEP . 'lab' . $num;
 
     if (!file_exists($dest_path))
         // create new directory for this assignment
         apollo_new_directory($dest_path);
 
-    $dest_path .= DIRECTORY_SEPARATOR . $username;
+    $dest_path .= SEP . $username;
 
     if (!file_exists($dest_path))
         // create new subdirectory for this student
         apollo_new_directory($dest_path);
 
-    $dest_path .= DIRECTORY_SEPARATOR . $dest_name;
+    $dest_path .= SEP . $dest_name;
 
     if (move_uploaded_file($tmp_path, $dest_path) === FALSE)
         return FALSE;
@@ -496,7 +485,7 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
         // no more space on the file system (?)
         return FALSE;
 
-    if (chmod($dest_path, NEW_FILE_MODE) === FALSE)
+    if (chmod($dest_path, NEW_FILE_MODE_INT) === FALSE)
         trigger_error("error setting mode of uploaded file: $dest_path");
 
     /*
@@ -512,7 +501,7 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
     }
 
     if (file_put_contents($receipt_path, $now, FILE_APPEND) !== FALSE) {
-        if (chmod($receipt_path, NEW_FILE_MODE) === FALSE)
+        if (chmod($receipt_path, NEW_FILE_MODE_INT) === FALSE)
             trigger_error("error setting mode of receipt: $receipt_path");
     }
 
@@ -535,14 +524,12 @@ function files_with_due_date($info, $pair) {
 
 // form a path to a file in a student submission directory
 function submission_path($num, $type, $username, $file) {
-    return submission_dir_path($num, $type, $username) .
-           DIRECTORY_SEPARATOR . $file;
+    return submission_dir_path($num, $type, $username) . SEP . $file;
 }
 
 // form a path to a student's submission directory
 function submission_dir_path($num, $type, $username) {
-    return SUBMISSIONS_DIR . DIRECTORY_SEPARATOR . $type . $num .
-           DIRECTORY_SEPARATOR . $username;
+    return SUBMISSIONS_DIR . SEP . $type . $num . SEP . $username;
 }
 
 // return TRUE if a student has submitted a particular file

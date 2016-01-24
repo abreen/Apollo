@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * upload.php - provides upload fields for files in an assignment

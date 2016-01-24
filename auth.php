@@ -1,14 +1,15 @@
-<?php // 5.3.3
+<?php
 
 /*
- * auth.php - causes users not logged in to be redirected to login
+ * auth.php - verifies that Kerberos login has occurred
  *
  * Author: Alexander Breen (alexander.breen@gmail.com)
  */
 
 session_start();
 
-if (!isset($_SESSION['username']) || !$_SESSION['username']) {
-    header("Location: login.php");
-    exit;
+if (!isset($_SERVER['REMOTE_USER'])) {
+    trigger_error('could not authenticate using Kerberos', E_USER_ERROR);
+} else {
+    $_SESSION['username'] = $_SERVER['REMOTE_USER'];
 }

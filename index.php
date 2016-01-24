@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 /*
  * index.php - provides a summary of upload/grade links for each assignment

@@ -1,4 +1,4 @@
-<?php // 5.3.3
+<?php
 
 function plural($word, $n) {
     if ($n == 1)
@@ -82,4 +82,34 @@ function html_pre($s) {
            str_replace(array_keys($pairs), array_values($pairs),
                        $specialchars) .
            '</div>';
+}
+
+/*
+ * http://stackoverflow.com/questions/8272723/test-if-string-could-be-boolean-php
+ */
+function is_truthy($str) {
+    $string = strtolower($str);
+    return in_array(
+        strtolower($str),
+        array('true', "false", "1", "0", "yes", "no"),
+        true
+    );
+}
+
+/*
+ * http://php.net/manual/en/function.is-bool.php#113693
+ */
+function str_to_bool($var) {
+    if (!is_string($var)) return (bool) $var;
+
+    switch (strtolower($var)) {
+        case '1':
+        case 'true':
+        case 'on':
+        case 'yes':
+        case 'y':
+      return true;
+    default:
+      return false;
+    }
 }
