@@ -397,9 +397,9 @@ function assignment_upload_status($info) {
 
     if (in_array(ACCEPTING, $statuses))
         return ACCEPTING;
-    else if (in_array(ACCEPTING_LATE, $statuses))
+    elseif (in_array(ACCEPTING_LATE, $statuses))
         return ACCEPTING_LATE;
-    else if (in_array(TOO_EARLY, $statuses))
+    elseif (in_array(TOO_EARLY, $statuses))
         return TOO_EARLY;
     else
         return CLOSED;
@@ -482,7 +482,7 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
         // file exists, but size cannot be obtained (permissions?)
         return false;
 
-    else if ($size === 0)
+    elseif ($size === 0)
         // no more space on the file system (?)
         return false;
 

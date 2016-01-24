@@ -45,7 +45,7 @@ function create_row($num, $type) {
         $status_str = $status_map[$status][1];
         $str .= '<span class="status ' . $status_class .
                 '">' . $status_str . '</span>';
-    } else if ($parts) {
+    } elseif ($parts) {
         $str .= '<span class="status graded">Graded</span>';
     } else {
         $str .= '<span class="status notgraded">Not yet graded</span>';
@@ -61,7 +61,7 @@ function create_row($num, $type) {
                     '&num=' . $num .
                     '">View uploaded files</a></li>';
         }
-    } else if ($status != CLOSED) {
+    } elseif ($status != CLOSED) {
         if (anything_submitted($num, $type, $_SESSION['username'])) {
             $str .= '<li><a class="php" href="upload.php?type=' . $type .
                     '&num=' . $num .
