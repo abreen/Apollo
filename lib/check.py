@@ -23,7 +23,7 @@ import ast
 
 filename = sys.argv[1]
 
-with open(filename, 'r') as f:
+with open(filename, 'U') as f:
     source = f.read()
 
 try:
