@@ -7,4 +7,4 @@
  */
 
 define('SEP', DIRECTORY_SEPARATOR);
-define('APOLLO_VERSION', '2.2');
+define('APOLLO_VERSION', '2.3');
