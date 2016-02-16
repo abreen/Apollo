@@ -254,7 +254,7 @@ foreach ($expected_files as $file => $dates) {
     }
 
     if ($allowed) {
-        $str .= '<input type="file" name="' . $html_safe .
+        $str .= '<input type="file" class="input-file" name="' . $html_safe .
                 '" accept=".' . $extension . '">';
 
         if ($status == ACCEPTING_LATE)
@@ -263,7 +263,7 @@ foreach ($expected_files as $file => $dates) {
             $str .= '<div class="caption acceptingcaption">Accepting submissions</div>';
 
     } else {
-        $str .= '<input type="file" name="' . $html_safe .
+        $str .= '<input type="file" class="input-file" name="' . $html_safe .
                 '" disabled="disabled">';
 
         $str .= '<div class="caption">Not accepting submissions</div>';

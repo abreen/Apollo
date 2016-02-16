@@ -24,8 +24,55 @@ $rows
 
 <div class="row">
     <div class="left"></div>
-    <div class="right"><input type="submit" value="Upload"></div>
+    <div class="right"><input type="submit" class="input-submit" value="Upload"></div>
 </div>
 
 <input type="hidden" name="submitted">
 </form>
+
+<script type="text/javascript">
+var filesChosen = 0;
+var submitting = false;
+var els = document.getElementsByClassName('input-file');
+
+function setChosen() {
+    filesChosen++;
+}
+
+for (var i = 0; i < els.length; i++) {
+    els[i].onchange = setChosen;
+}
+
+function setSubmitting() {
+    submitting = true;
+}
+
+var submitEls = document.getElementsByClassName('input-submit');
+
+for (var i = 0; i < submitEls.length; i++) {
+    submitEls[i].onclick = setSubmitting;
+}
+
+window.onbeforeunload = function (e) {
+    if (filesChosen == 0 || submitting) {
+        return;
+    }
+
+    if (filesChosen == 1) {
+        var s = 'file';
+    } else {
+        var s = 'files';
+    }
+
+    var msg = 'The ' + s + ' you chose will not be uploaded. If you want to ' +
+              'upload files, click the Upload button at the bottom of the page.';
+
+    e = e || window.event;
+
+    if (e) {
+        e.returnValue = msg;
+    }
+
+    return msg;
+};
+</script>
