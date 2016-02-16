@@ -442,6 +442,8 @@ function due_dates($info) {
  * wrong.
  */
 function save_file($num, $type, $username, $tmp_path, $dest_name) {
+    global $now;
+
     check_assignment($num, $type);
 
     $dest_path = SUBMISSIONS_DIR;
@@ -460,6 +462,39 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
     if (!file_exists($dest_path))
         // create new subdirectory for this student
         apollo_new_directory($dest_path);
+
+    if (file_exists($dest_path . SEP . $dest_name) &&
+        file_exists($dest_path . SEP . $dest_name . '.receipt'))
+    {
+        // an older version of this file already exists
+        $prev_dir_path = $dest_path . SEP . '.previous';
+
+        if (!file_exists($prev_dir_path)) {
+            // create .previous directory for this assignment
+            apollo_new_directory($prev_dir_path);
+        }
+
+        $prev_dt = get_receipt_time($num, $type, $username, $dest_name);
+        $prev_dt_str = $prev_dt->format(ISO8601_TZ);
+
+        if (!file_exists($prev_dir_path . SEP . $prev_dt_str)) {
+            // create subdirectory for this timestamp
+            apollo_new_directory($prev_dir_path . SEP . $prev_dt_str);
+        }
+
+        // finally, move file into .previous subdirectory
+        rename(
+            $dest_path . SEP . $dest_name,
+            $prev_dir_path . SEP . $prev_dt_str . SEP . $dest_name
+        );
+
+        // remove old receipt file
+        unlink($dest_path . SEP . $dest_name . '.receipt');
+
+    } elseif (file_exists($dest_path . SEP . $dest_name)) {
+        // no receipt file for this old version; just delete it
+        unlink($dest_path . SEP . $dest_name);
+    }
 
     $dest_path .= SEP . $dest_name;
 
@@ -493,18 +528,10 @@ function save_file($num, $type, $username, $tmp_path, $dest_name) {
      * Only if the move was successful, we attempt to save a receipt file
      * with the current date and time.
      */
-    $dt = new DateTime();
-    $now = $dt->format(ISO8601_TZ);
+    $now_str = $now->format(ISO8601_TZ) . "\n";
     $receipt_path = $dest_path . '.receipt';
 
-    if (is_file($receipt_path)) {
-        file_put_contents($receipt_path, "\n", FILE_APPEND);
-    }
-
-    if (file_put_contents($receipt_path, $now, FILE_APPEND) !== false) {
-        if (chmod($receipt_path, NEW_FILE_MODE_INT) === false)
-            trigger_error("error setting mode of receipt: $receipt_path");
-    }
+    apollo_new_file($receipt_path, $now_str);
 
     return $dest_path;
 }
@@ -551,10 +578,20 @@ function anything_submitted($num, $type, $username) {
 // get a DateTime object for the submission time from a receipt, or null
 function get_receipt_time($num, $type, $username, $filename) {
     $path = submission_path($num, $type, $username, $filename) . '.receipt';
+
+    if (!file_exists($path))
+        return null;
+
     $lines = file($path, FILE_IGNORE_NEW_LINES);
-    if ($lines === false) return null;
+
+    if ($lines === false)
+        return null;
+
     $d = DateTime::createFromFormat(ISO8601_TZ, $lines[count($lines) - 1]);
-    if ($d === false) return null;
+
+    if ($d === false)
+        return null;
+
     return $d;
 }
 
