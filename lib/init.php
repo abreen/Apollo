@@ -2,6 +2,30 @@
 
 require_once 'globals.php';
 
+// "unregistering" globals
+// http://php.net/manual/en/faq.misc.php#faq.misc.registerglobals
+if (ini_get('register_globals')) {
+    if (isset($_REQUEST['GLOBALS']) || isset($_FILES['GLOBALS'])) {
+        exit;
+    }
+
+    $no_unset = array(
+        'GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER',
+        '_ENV', '_FILES'
+    );
+
+    $input = array_merge(
+        $_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES,
+        isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array()
+    );
+
+    foreach ($input as $k => $v) {
+        if (!in_array($k, $no_unset) && isset($GLOBALS[$k])) {
+            unset($GLOBALS[$k]);
+        }
+    }
+}
+
 /*
  * Used *only* for serious configuration-related errors that occur in this
  * initialization script. It should be used before set_error_handler() is
