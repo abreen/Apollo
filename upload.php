@@ -114,7 +114,9 @@ if (isset($_POST['submitted'])) {
             if ($status === -1) {
                 // something went wrong with the helper script; do nothing
                 $successes[$filename] = 'File uploaded successfully.';
-            } elseif ($status != 0) {
+            } elseif ($status != 0 && count($output) == 4) {
+                // if count($output) != 4, then there must have been
+                // an error running the script
                 $error_type = $output[0];
                 $error_line = $output[1];
                 $error_msg = $output[2];
@@ -125,13 +127,20 @@ if (isset($_POST['submitted'])) {
                 else
                     $kind = 'a ' . $error_type;
 
-                $warnings[$filename] = "Your file was uploaded, but $kind " .
-                    "was found near line $error_line: <pre>" .
-                    htmlspecialchars($error_code) . '</pre>' .
-                    'The Python interpreter reported ' .
-                    html_tt(htmlspecialchars($error_msg)) . '. ' .
-                    '<strong>Please review this code and re-upload it, if ' .
-                    'necessary.</strong>';
+                if ($error_line == -1) {
+                    $warnings[$filename] = "Your file was uploaded, but the " .
+                        "Python interpreter reported $kind (" .
+                        html_tt(htmlspecialchars($error_msg)) . ').';
+                } else {
+                    $warnings[$filename] = "Your file was uploaded, but $kind " .
+                        "was found near line $error_line: <pre>" .
+                        htmlspecialchars($error_code) . '</pre>' .
+                        'The Python interpreter reported ' .
+                        html_tt(htmlspecialchars($error_msg)) . '.';
+                }
+
+                $warnings[$filename] .= ' <strong>Please review this code ' .
+                        'and re-upload it, if necessary.</strong>';
 
             } else {
                 $successes[$filename] = 'File uploaded successfully.';

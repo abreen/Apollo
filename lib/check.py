@@ -28,14 +28,21 @@ with open(filename, 'U') as f:
 
 try:
     ast.parse(source, filename)
-except (IndentationError, SyntaxError) as e:
+except (IndentationError, SyntaxError, ValueError) as e:
     if type(e) is IndentationError:
         print 'indentation error'
+        print e.lineno
+        print e.msg
+        print e.text.strip()
     elif type(e) is SyntaxError:
         print 'syntax error'
-
-    print e.lineno
-    print e.msg
-    print e.text.strip()
+        print e.lineno
+        print e.msg
+        print e.text.strip()
+    elif type(e) is ValueError:
+        print 'error'
+        print '-1'
+        print e.message
+        print ''
 
     sys.exit(1)
