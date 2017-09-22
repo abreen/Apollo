@@ -102,7 +102,8 @@ $optional_vars = array(
     'DEBUG_MODE' => false,
     'MAINTENANCE_MODE' => false,
     'NEW_FILE_MODE' => '0666',
-    'NEW_DIR_MODE' => '0777'
+    'NEW_DIR_MODE' => '0777',
+    'LOG_ERRORS' => false
 );
 
 foreach ($optional_vars as $name => $default)
@@ -122,11 +123,11 @@ ini_set('display_errors', DEBUG_MODE);
 require_once 'template.php';
 
 /*
- * This function is called when an error is triggered. If Apollo is in debug
- * mode, details about the error, running script, and line number are actually
- * displayed to the user.
+ * Given details about a PHP error, this function returns a compact string
+ * containing the error details and the values of relevant superglobals,
+ * ideal for logging to a file.
  */
-function http_error($num, $str, $file, $line) {
+function get_error_string($num, $error_string, $file, $line) {
     switch ($num) {
         case E_ERROR: $level_str = 'E_ERROR'; break;
         case E_WARNING: $level_str = 'E_WARNING'; break;
@@ -149,7 +150,7 @@ function http_error($num, $str, $file, $line) {
 
     $err = date(DATE_RFC2822) . "\n" .
            "\ttype=$level_str\n" .
-           "\tmessage=$str\n" .
+           "\tmessage=$error_string\n" .
            "\tfile=$file:$line\n";
 
     if (isset($_SESSION['username']))
@@ -158,19 +159,37 @@ function http_error($num, $str, $file, $line) {
     $err .= "\t\$_GET=" . json_encode($_GET) . "\n";
     $err .= "\t\$_POST=" . json_encode($_POST) . "\n";
 
-    $error_log_path = LOGS_DIR . SEP . 'errors.log';
+    return $err;
+}
 
-    file_put_contents($error_log_path, $err, FILE_APPEND);
-
+/*
+ * This function is called when an error is triggered. If Apollo is in debug
+ * mode, details about the error, running script, and line number are actually
+ * displayed to the user.
+ */
+function http_error($num, $str, $file, $line) {
     header('X-PHP-Response-Code: 500', true, 500);
 
     $vars = array();
     $vars['title'] = 'Server error';
 
+    $error_string = get_error_string($num, $str, $file, $line);
+    $error_details = '';
+
+    if (LOG_ERRORS) {
+        $error_log_path = LOGS_DIR . SEP . 'errors.log';
+        file_put_contents($error_log_path, $error_string, FILE_APPEND);
+
+        $error_details = 'The following information was appended to ' .
+          'the Apollo error log at <tt>' . htmlspecialchars($error_log_path) .
+          "</tt>:\n";
+    }
+
+    $error_details .= '<pre>' . htmlspecialchars($error_string) . '</pre>';
+
     if (DEBUG_MODE) {
         use_body_template('500debug');
-        $vars['errorlogpath'] = $error_log_path;
-        $vars['errorstr'] = $err;
+        $vars['errordetails'] = $error_details;
     } else {
         use_body_template('500');
     }
