@@ -37,6 +37,7 @@ $vars['filename'] = $_GET['file'];
 $vars['file'] = html_pre(file_get_contents($path));
 
 $vars['url'] = "upload.php?type=$type&num=$num";
+$vars['username'] = $_SESSION['username'];
 $vars['assignment'] = $assignment_name;
 
 $dt = get_receipt_time($num, $type, $_SESSION['username'], $_GET['file']);
