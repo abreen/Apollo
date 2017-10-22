@@ -17,7 +17,16 @@
 
 require_once 'globals.php';
 
-define('MASTHEAD', '<div class="apollo-logo">Apollo</div><br>');
+define('MASTHEAD', <<<TEMPLATE
+<div class="masthead">
+  <div class="apollo-logo">Apollo</div>
+  <div class="session-info">
+    <tt>\$username</tt> is logged in
+    <a class="button log-out-button" href="http://www.bu.edu/htbin/logout">Log out</a>
+  </div>
+</div>
+TEMPLATE
+);
 
 /*
  * Associative array used to keep mappings between variables found in the
